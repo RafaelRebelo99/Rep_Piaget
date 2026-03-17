@@ -1,7 +1,7 @@
 # Rep_Piaget 📚
-Projeto integrador da Licenciatura em Engenharia Informática do Instituto Piaget 25/26
+**Projeto integrador** da Licenciatura em Engenharia Informática do Instituto Piaget 25/26
 
-_Developed _With ❤️ _by:
+**Developed _With ❤️ _by:**
 João Neves,
 Rafael Rebelo,
 Rodrigo Pires,
