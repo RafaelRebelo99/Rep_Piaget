@@ -1,4 +1,4 @@
-# Rep_Piaget
+# Rep_Piaget 📚
 Projeto integrador da Licenciatura em Engenharia Informática do Instituto Piaget 25/26
 
 Developed With ❤️ by:
