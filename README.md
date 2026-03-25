@@ -18,7 +18,9 @@ O REP é uma plataforma académica desenvolvida para os alunos dos cursos tecnol
 - ⚛️ **Frontend** Next.js, TypeScript, Tailwind CSS 
 - ⚙️ **Backend** Next.js API Routes
 - 💾 **Base de dados** Supabase (PostgreSQL)
-- 🧠 **Chat Bot** OpenAI API 
+- 🧠 **Chat Bot** OpenAI API
+
+ ** 🛠️ Em desenvolvimento...**
 
 
 
