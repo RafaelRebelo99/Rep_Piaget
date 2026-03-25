@@ -20,7 +20,7 @@ O REP é uma plataforma académica desenvolvida para os alunos dos cursos tecnol
 - 💾 **Base de dados** Supabase (PostgreSQL)
 - 🧠 **Chat Bot** OpenAI API
 
- ## 🛠️ Etapas de desenvolvimento
+ # 🛠️ Etapas de desenvolvimento
 
  # Fase 0️⃣
 Nesta fase será realizada a análise inicial do sistema, incluindo a identificação dos requisitos funcionais e não funcionais.
