@@ -20,7 +20,7 @@ O REP é uma plataforma académica desenvolvida para os alunos dos cursos tecnol
 - 💾 **Base de dados** Supabase (PostgreSQL)
 - 🧠 **Chat Bot** OpenAI API
 
- ** 🛠️ Em desenvolvimento...**
+ # 🛠️ Em desenvolvimento...** # 
 
 
 
