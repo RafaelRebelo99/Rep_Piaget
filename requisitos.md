@@ -24,9 +24,9 @@ browser. O sistema abrange as seguintes áreas funcionais:
 
 • Pesquisa de conteúdos na plataforma
 
-## 🔹 3. Requisitos Funcionais
+# 🔹 3. Requisitos Funcionais
 
-3.1 Autenticação e Gestão de Utilizadores
+## 3.1 Autenticação e Gestão de Utilizadores
 
 • RF01 O sistema deve permitir o registo de novos utilizadores com e-mail e
 palavra-passe, Alta
