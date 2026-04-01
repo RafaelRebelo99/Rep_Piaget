@@ -22,18 +22,19 @@ browser. O sistema abrange as seguintes áreas funcionais:
 
 3.1 Autenticação e Gestão de Utilizadores
 
-.RF01 O sistema deve permitir o registo de novos utilizadores com e-mail e
-Alta
-palavra-passe
-.RF02 O sistema deve permitir o login com e-mail e palavra-passe Alta
-.RF03 O sistema deve suportar login com conta institucional
-Média
+RF01 O sistema deve permitir o registo de novos utilizadores com e-mail e
+palavra-passe, Alta
+
+RF02 O sistema deve permitir o login com e-mail e palavra-passe, Alta
+
+RF03 O sistema deve suportar login com conta institucional,Média
 (Google/OAuth)
-.RF04 O sistema deve permitir a recuperação de palavra-passe por e-mail Alta
-.RF05 O sistema deve distinguir os perfis: Aluno, Professor e
-Alta
-Administrador
-.RF06 O administrador deve poder gerir contas (criar, suspender, eliminar) Alta
+
+RF04 O sistema deve permitir a recuperação de palavra-passe por e-mail Alta
+
+RF05 O sistema deve distinguir os perfis: Aluno e Administrador, Alta
+
+RF06 O administrador deve poder gerir contas (criar, suspender, eliminar) Alta
 
 ## 🔹 3.2 Materiais Académicos
 
