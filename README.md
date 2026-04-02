@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Projeto Integrador - Repositório para estudantes do Piaget 📚
+**Projeto integrador** da Licenciatura em Engenharia Informática do Instituto Piaget 25/26
 
-## Getting Started
+**Built With ❤️ by:**
+João Neves,
+Rafael Rebelo,
+Rodrigo Pires,
+Yurma Afonso.
 
-First, run the development server:
+O REP é uma plataforma académica desenvolvida para os alunos dos cursos tecnológicos do instituto Piaget (Almada), com o objetivo de centralizar materiais de estudo, feedback de disciplinas e apoio ao estudo através de Inteligência Artificial.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🧠 Objetivos
+- Facilitar o acesso a materias académicos( resumos, exames e apontamentos) através de upload e dowload de ficheiros
+- Permitir aos alunos dar e consultar feedback sobre as respetivas disciplinas
+- Com a integração de um chat bot, ajudar os alunos a estudar e realizar quiz's com base nos materiais carregados na própria disciplina
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## </> Tecnologias utilizadas
+- ⚛️ **Frontend** Next.js, TypeScript, Tailwind CSS 
+- ⚙️ **Backend** Next.js API Routes
+- 💾 **Base de dados** Supabase (PostgreSQL)
+- 🧠 **Chat Bot** OpenAI API
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+ # 🛠️ Etapas de desenvolvimento
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ # Fase 0️⃣
+Nesta fase será realizada a análise inicial do sistema, incluindo a identificação dos requisitos funcionais e não funcionais.
 
-## Learn More
+**Inclui:**
+- Levantamento de requisitos
+- Definição das funcionalidades principais
+- Design da interface (UI/UX)
+- Criação de protótipos (wireframes)
+- Definição da arquitetura do sistema
 
-To learn more about Next.js, take a look at the following resources:
+# Fase 1️⃣
+Implementação das funcionalidades principais da aplicação, incluindo frontend e backend.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Inclui:**
+- Desenvolvimento da interface com Next.js
+- Criação de componentes (navbar, grid, páginas)
+- Implementação de API routes
+- Estruturação da aplicação
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Fase 2️⃣
+Será feita a integracão da base de dados e a comunicação entre front e backend.
 
-## Deploy on Vercel
+**Inclui:**
+- Integração com o backend (API routes)
+- Ligação entre frontend e base de dados
+- Testes funcionais entre front e backend
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Fase 3️⃣
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Integração de funcionalidades de inteligência artificial e validação do sistema.
+
+**Inclui:**
+- Implementação do chatbot 
+- Funcionalidades de apoio ao estudo
+- Testes funcionais
+- Correção de erros (debugging)
+- Validação do sistema
+  
+
+
+
+
+
