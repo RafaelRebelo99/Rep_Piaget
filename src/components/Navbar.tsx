@@ -60,7 +60,7 @@ export default function Navbar() {
         {/* Desktop: logo esquerda */}
         <Link
           href="/"
-          className="hidden md:block text-[#8B1A1A] font-bold text-xl tracking-tight"
+          className="hidden md:block text-primary font-bold text-xl tracking-tight"
           aria-label="REP - Página inicial"
         >
           REP
@@ -77,8 +77,8 @@ export default function Navbar() {
                 aria-current={isActive ? 'page' : undefined}
                 className={`text-sm transition-colors pb-1 border-b-2 ${
                   isActive
-                    ? 'text-[#8B1A1A] border-[#8B1A1A]'
-                    : 'text-gray-600 border-transparent hover:text-[#8B1A1A]'
+                    ? 'text-primary border-[#8B1A1A]'
+                    : 'text-gray-600 border-transparent hover:text-primary'
                 }`}
               >
                 {label}
@@ -89,12 +89,12 @@ export default function Navbar() {
 
         {/* Desktop: botões auth direita */}
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/entrar" className="text-sm text-gray-600 hover:text-[#8B1A1A] transition-colors">
+          <Link href="/entrar" className="text-sm text-gray-600 hover:text-primary transition-colors">
             Entrar
           </Link>
           <Link
             href="/registar"
-            className="text-sm text-white bg-[#8B1A1A] px-4 py-2 rounded hover:bg-[#701515] transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B1A1A] focus:ring-offset-2"
+            className="text-sm text-white bg-primary px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             Registar
           </Link>
@@ -106,14 +106,14 @@ export default function Navbar() {
 
           <Link
             href="/"
-            className="text-[#8B1A1A] font-bold text-xl tracking-tight"
+            className="text-primary font-bold text-xl tracking-tight"
             aria-label="REP - Página inicial"
           >
             REP
           </Link>
 
           <button
-            className="w-10 h-10 flex items-center justify-center rounded-lg text-gray-500 hover:text-[#8B1A1A] hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#8B1A1A]"
+            className="w-10 h-10 flex items-center justify-center rounded-lg text-gray-500 hover:text-primary hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
@@ -153,8 +153,8 @@ export default function Navbar() {
                 onClick={() => setMenuOpen(false)}
                 className={`flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-[#8B1A1A] text-white'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-[#8B1A1A]'
+                    ? 'bg-primary text-white'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-primary'
                 }`}
               >
                 {icon}

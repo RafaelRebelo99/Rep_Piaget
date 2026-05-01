@@ -11,13 +11,13 @@ export default function Footer() {
         <div className="flex gap-6 sm:justify-end">
           <Link
             href="/termos"
-            className="text-xs text-gray-400 tracking-widest hover:text-[#8B1A1A] transition-colors uppercase"
+            className="text-xs text-gray-400 tracking-widest hover:text-primary transition-colors uppercase"
           >
             Termos
           </Link>
           <Link
             href="/contactos"
-            className="text-xs text-gray-400 tracking-widest hover:text-[#8B1A1A] transition-colors uppercase"
+            className="text-xs text-gray-400 tracking-widest hover:text-primary transition-colors uppercase"
           >
             Contactos
           </Link>
