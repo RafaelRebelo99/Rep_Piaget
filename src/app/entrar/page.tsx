@@ -22,14 +22,33 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0v4" />
     </svg>
   ),
+
+  eye: (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+    ),
+
+    eyeOff: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.5-7a9.951 9.951 0 011.667-4.826M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7.586 7.586l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414z" />
+      </svg>
+    ),
 }
 
 export default function RegisterForm() {
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
+  const normalEmail = email.trim().toLowerCase()
+  const emailUsername = normalEmail.split('@')[0]
 
   const [password, setPassword] = useState('')
+  const normalPassword = password.trim()
+  const passwordLower = normalPassword.toLowerCase()
   const [passwordError, setPasswordError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const [rememberMe, setRememberMe] = useState(false)
 
@@ -42,15 +61,12 @@ export default function RegisterForm() {
     '11111111',
     '00000000',
     'abc12345',
-]
+  ]
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
   event.preventDefault()
 
-  const normalEmail = email.trim().toLowerCase()
-  const normalPassword = password.trim()
-  const passwordLower = normalPassword.toLowerCase()
-  const emailUsername = normalEmail.split('@')[0]
+ 
 
   let hasError = false
 
@@ -151,7 +167,7 @@ export default function RegisterForm() {
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(event) =>{
                   setPassword(event.target.value)
@@ -160,7 +176,24 @@ export default function RegisterForm() {
                 placeholder="••••••••"
                 className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-4 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
               />
-            </div>
+
+             <button
+                type="button"
+                onPointerDown={(event) => {
+                event.preventDefault()
+                setShowPassword(true)
+              }}
+                onPointerUp={() => setShowPassword(false)}
+                onPointerLeave={() => setShowPassword(false)}
+                onPointerCancel={() => setShowPassword(false)}
+                onBlur={() => setShowPassword(false)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#87001f]"
+                aria-label="Manter premido para mostrar a palavra-passe"
+              >
+               {showPassword ? icons.eyeOff : icons.eye}
+            </button>
+          </div>
+            
             {passwordError && (
               <p className="mt-2 text-xs font-medium text-[#87001f]">
                 {passwordError}
