@@ -37,7 +37,16 @@ const icons = {
       </svg>
     ),
 }
-
+  const weakPasswords = [
+    '12345678',
+    'password',
+    'qwerty',
+    'qwerty123',
+    '123456789',
+    '11111111',
+    '00000000',
+    'abc12345',
+  ]
 export default function RegisterForm() {
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
@@ -52,21 +61,8 @@ export default function RegisterForm() {
 
   const [rememberMe, setRememberMe] = useState(false)
 
-  const weakPasswords = [
-    '12345678',
-    'password',
-    'qwerty',
-    'qwerty123',
-    '123456789',
-    '11111111',
-    '00000000',
-    'abc12345',
-  ]
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-  event.preventDefault()
-
- 
+  event.preventDefault() 
 
   let hasError = false
 
@@ -153,6 +149,8 @@ export default function RegisterForm() {
               </p>
             )}
           </div>
+
+          
 
           <div>
             <label htmlFor="password" className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-[#3c2530]">
