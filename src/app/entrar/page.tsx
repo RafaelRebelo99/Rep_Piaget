@@ -27,27 +27,67 @@ const icons = {
 export default function RegisterForm() {
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
+
   const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+
   const [rememberMe, setRememberMe] = useState(false)
 
+  const weakPasswords = [
+    '12345678',
+    'password',
+    'qwerty',
+    'qwerty123',
+    '123456789',
+    '11111111',
+    '00000000',
+    'abc12345',
+]
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  event.preventDefault()
 
-    const normalEmail = email.trim().toLowerCase()
+  const normalEmail = email.trim().toLowerCase()
+  const normalPassword = password.trim()
+  const passwordLower = normalPassword.toLowerCase()
+  const emailUsername = normalEmail.split('@')[0]
 
-    if (!normalEmail.endsWith('@ipiaget.pt')) {
-      setEmailError('Por favor, introduza o seu email institucional.')
-      return
-    }
+  let hasError = false
 
+  if (!normalEmail.endsWith('@ipiaget.pt')) {
+    setEmailError('Por favor, introduza o seu email institucional.')
+    hasError = true
+  } else {
     setEmailError('')
-
-    console.log({
-      email: normalEmail,
-      password,
-      rememberMe,
-    })
   }
+
+  if (!normalPassword) {
+    setPasswordError('Por favor, introduza a sua palavra-passe.')
+    hasError = true
+  } else if (normalPassword.length < 8) {
+    setPasswordError('A palavra-passe deve ter pelo menos 8 caracteres.')
+    hasError = true
+  } else if (weakPasswords.includes(passwordLower)) {
+    setPasswordError('A palavra-passe é muito fraca. Por favor, escolha uma palavra-passe mais segura.')
+    hasError = true
+  } else if (emailUsername && passwordLower.includes(emailUsername)) {
+    setPasswordError('A palavra-passe não deve conter o nome de utilizador do email.')
+    hasError = true
+  } else if (normalEmail && passwordLower.includes(normalEmail)) {
+    setPasswordError('A palavra-passe não deve conter o email.')
+    hasError = true
+  } else {
+    setPasswordError('')
+  }
+
+  if (hasError) return
+
+  console.log({
+    email: normalEmail,
+    password,
+    rememberMe,
+  })
+}
 
   return (
     <main className="min-h-[calc(100vh-116px)] flex items-start justify-center bg-[#f4f5f7] px-4 pt-8 md:pt-10">
@@ -113,11 +153,19 @@ export default function RegisterForm() {
                 name="password"
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) =>{
+                  setPassword(event.target.value)
+                  setPasswordError('')
+                }}
                 placeholder="••••••••"
                 className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-4 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
               />
             </div>
+            {passwordError && (
+              <p className="mt-2 text-xs font-medium text-[#87001f]">
+                {passwordError}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center justify-between text-xs">
