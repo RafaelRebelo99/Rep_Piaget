@@ -12,43 +12,47 @@ export default function Suporte() {
         <form className="flex flex-col gap-4">
           <div>
             <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
-              Nome Completo
+              Nome Completo <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               placeholder="Introduza o seu nome"
+              required
               className="w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none"
             />
           </div>
 
           <div>
             <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
-              E-mail Académico
+              E-mail de Contacto <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
-              placeholder="2037437992@ipiaget.pt"
+              placeholder="exemplo@gmail.com"
+              required
               className="w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none"
             />
           </div>
 
           <div>
             <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
-              Assunto
+              Assunto <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               placeholder="Sobre o que deseja falar?"
+              required
               className="w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none"
             />
           </div>
 
           <div>
             <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
-              Descrição do Problema
+              Descrição do Problema <span className="text-red-500">*</span>
             </label>
             <textarea
               placeholder="Descreva o ocorrido..."
+              required
               className="w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none h-28 resize-none"
             />
           </div>
@@ -57,7 +61,7 @@ export default function Suporte() {
             type="submit"
             className="mt-4 bg-red-900 text-white py-3 rounded-md text-sm font-semibold hover:bg-red-800 transition-colors"
           >
-            ▷ Enviar Relatório
+            ▷ Enviar Pedido
           </button>
         </form>
       </div>
