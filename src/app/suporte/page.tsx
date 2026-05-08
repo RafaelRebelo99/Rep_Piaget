@@ -2,26 +2,38 @@
 
 import { useState } from "react";
 
+type Feedback = {
+  tipo: "sucesso" | "erro" | "validacao";
+  mensagem: string;
+} | null;
+
 export default function Suporte() {
   const [loading, setLoading] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [assunto, setAssunto] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [feedback, setFeedback] = useState<Feedback>(null);
+  const [campoErro, setCampoErro] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFeedback(null);
+    setCampoErro(null);
 
     if (!nome.trim()) {
-      alert("Por favor, introduza o seu nome completo.");
+      setCampoErro("nome");
+      setFeedback({ tipo: "validacao", mensagem: "O nome completo é obrigatório e não pode conter apenas espaços." });
       return;
     }
     if (!assunto.trim()) {
-      alert("Por favor, introduza um assunto.");
+      setCampoErro("assunto");
+      setFeedback({ tipo: "validacao", mensagem: "O assunto é obrigatório e não pode conter apenas espaços." });
       return;
     }
     if (!descricao.trim()) {
-      alert("Por favor, descreva o problema.");
+      setCampoErro("descricao");
+      setFeedback({ tipo: "validacao", mensagem: "A descrição do problema é obrigatória e não pode conter apenas espaços." });
       return;
     }
 
@@ -41,17 +53,29 @@ export default function Suporte() {
 
       if (!res.ok) throw new Error("Erro ao enviar");
 
-      alert("Pedido enviado com sucesso!");
+      setFeedback({
+        tipo: "sucesso",
+        mensagem: "O seu pedido foi enviado com sucesso! Entraremos em contacto brevemente.",
+      });
       setNome("");
       setEmail("");
       setAssunto("");
       setDescricao("");
+      setCampoErro(null);
     } catch {
-      alert("Ocorreu um erro. Tenta novamente.");
+      setFeedback({
+        tipo: "erro",
+        mensagem: "Ocorreu um erro ao enviar o pedido. Verifique a sua ligação à internet e tente novamente.",
+      });
     } finally {
       setLoading(false);
     }
   };
+
+  const inputClass = (campo: string) =>
+    `w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none border-2 transition-colors ${
+      campoErro === campo ? "border-red-400 bg-red-50" : "border-transparent"
+    }`;
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center py-16 px-4">
@@ -63,6 +87,40 @@ export default function Suporte() {
       </div>
 
       <div className="w-full max-w-xl bg-white rounded-xl shadow-sm p-8">
+
+        {/* Caixa de feedback */}
+        {feedback && (
+          <div
+            className={`mb-6 px-4 py-3 rounded-lg text-sm flex items-start gap-3 border ${
+              feedback.tipo === "sucesso"
+                ? "bg-green-50 border-green-300 text-green-800"
+                : feedback.tipo === "validacao"
+                ? "bg-red-50 border-red-300 text-red-800"
+                : "bg-red-50 border-red-300 text-red-800"
+            }`}
+          >
+            <span className="text-lg leading-none">
+              {feedback.tipo === "sucesso" ? "✅" : feedback.tipo === "validacao" ? "⚠️" : "❌"}
+            </span>
+            <div>
+              <p className="font-semibold mb-0.5">
+                {feedback.tipo === "sucesso"
+                  ? "Pedido enviado"
+                  : feedback.tipo === "validacao"
+                  ? "Campo inválido"
+                  : "Erro ao enviar"}
+              </p>
+              <p>{feedback.mensagem}</p>
+            </div>
+            <button
+              onClick={() => setFeedback(null)}
+              className="ml-auto text-lg leading-none opacity-50 hover:opacity-100 transition-opacity"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div>
             <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
@@ -73,8 +131,8 @@ export default function Suporte() {
               placeholder="Introduza o seu nome"
               required
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              className="w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none"
+              onChange={(e) => { setNome(e.target.value); setCampoErro(null); }}
+              className={inputClass("nome")}
             />
           </div>
 
@@ -88,7 +146,7 @@ export default function Suporte() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none"
+              className={inputClass("email")}
             />
           </div>
 
@@ -101,8 +159,8 @@ export default function Suporte() {
               placeholder="Sobre o que deseja falar?"
               required
               value={assunto}
-              onChange={(e) => setAssunto(e.target.value)}
-              className="w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none"
+              onChange={(e) => { setAssunto(e.target.value); setCampoErro(null); }}
+              className={inputClass("assunto")}
             />
           </div>
 
@@ -114,8 +172,8 @@ export default function Suporte() {
               placeholder="Descreva o ocorrido..."
               required
               value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              className="w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none h-28 resize-none"
+              onChange={(e) => { setDescricao(e.target.value); setCampoErro(null); }}
+              className={`${inputClass("descricao")} h-28 resize-none`}
             />
           </div>
 
