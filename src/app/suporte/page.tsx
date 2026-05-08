@@ -1,10 +1,6 @@
-
-
 export default function Suporte() {
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center py-16 px-4">
-
-     
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-red-900 mb-2">Suporte</h1>
         <p className="text-gray-500 text-sm">
@@ -12,10 +8,8 @@ export default function Suporte() {
         </p>
       </div>
 
-    
       <div className="w-full max-w-xl bg-white rounded-xl shadow-sm p-8">
         <form className="flex flex-col gap-4">
-
           <div>
             <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
               Nome Completo
@@ -65,7 +59,6 @@ export default function Suporte() {
           >
             ▷ Enviar Relatório
           </button>
-
         </form>
       </div>
     </main>
