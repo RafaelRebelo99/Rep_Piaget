@@ -57,7 +57,9 @@ Para que a aplicação consiga comunicar com a base de dados e com a autenticaç
 2. Vai ao Dashboard do Resend em [resend.com](https://resend.com), faz login e navega para **API Keys**.
 3. Clica em **Create API Key** e copia a chave gerada.
 4. Abre o ficheiro `.env.local` e preenche o respetivo valor:
+   ```env
     RESEND_API_KEY=re_xxxxxxxxxxxxxxxx
+   ```
 > ⚠️ Em modo de teste o Resend só permite enviar emails para o endereço com que criaste a conta. Para usar um domínio próprio navega para **Domains → Add Domain** no dashboard do Resend.
 
 *Aviso de Segurança: O ficheiro `.env.local` está incluído no `.gitignore` e **nunca** deve ser enviado para o GitHub, contém credenciais sensíveis!*
