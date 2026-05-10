@@ -95,8 +95,8 @@ export default function Suporte() {
               feedback.tipo === "sucesso"
                 ? "bg-green-50 border-green-300 text-green-800"
                 : feedback.tipo === "validacao"
-                ? "bg-primary border-primary text-primary"
-                : "bg-primary border-primary text-primary"
+                ? "bg-red-50 border-red-300 text-red-800"
+                : "bg-red-50 border-red-300 text-red-800"
             }`}
           >
             <span className="text-lg leading-none">
