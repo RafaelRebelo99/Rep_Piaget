@@ -74,13 +74,13 @@ export default function Suporte() {
 
   const inputClass = (campo: string) =>
     `w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none border-2 transition-colors ${
-      campoErro === campo ? "border-red-400 bg-red-50" : "border-transparent"
+      campoErro === campo ? "border-primary bg-primary" : "border-transparent"
     }`;
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center py-16 px-4">
       <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-red-900 mb-2">Suporte</h1>
+        <h1 className="text-3xl font-bold text-primary mb-2">Suporte</h1>
         <p className="text-gray-500 text-sm">
           Relate problemas ou bugs encontrados na plataforma.
         </p>
@@ -95,8 +95,8 @@ export default function Suporte() {
               feedback.tipo === "sucesso"
                 ? "bg-green-50 border-green-300 text-green-800"
                 : feedback.tipo === "validacao"
-                ? "bg-red-50 border-red-300 text-red-800"
-                : "bg-red-50 border-red-300 text-red-800"
+                ? "bg-primary border-primary text-primary"
+                : "bg-primary border-primary text-primary"
             }`}
           >
             <span className="text-lg leading-none">
@@ -123,8 +123,8 @@ export default function Suporte() {
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div>
-            <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
-              Nome Completo <span className="text-red-500">*</span>
+            <label className="text-xs tracking-widest text-primary font-semibold uppercase">
+              Nome Completo <span className="text-primary">*</span>
             </label>
             <input
               type="text"
@@ -137,8 +137,8 @@ export default function Suporte() {
           </div>
 
           <div>
-            <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
-              E-mail de Contacto <span className="text-red-500">*</span>
+            <label className="text-xs tracking-widest text-primary font-semibold uppercase">
+              E-mail de Contacto <span className="text-primary">*</span>
             </label>
             <input
               type="email"
@@ -151,8 +151,8 @@ export default function Suporte() {
           </div>
 
           <div>
-            <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
-              Assunto <span className="text-red-500">*</span>
+            <label className="text-xs tracking-widest text-primary font-semibold uppercase">
+              Assunto <span className="text-primary">*</span>
             </label>
             <input
               type="text"
@@ -165,8 +165,8 @@ export default function Suporte() {
           </div>
 
           <div>
-            <label className="text-xs tracking-widest text-red-900 font-semibold uppercase">
-              Descrição do Problema <span className="text-red-500">*</span>
+            <label className="text-xs tracking-widest text-primary font-semibold uppercase">
+              Descrição do Problema <span className="text-primary">*</span>
             </label>
             <textarea
               placeholder="Descreva o ocorrido..."
@@ -180,8 +180,8 @@ export default function Suporte() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 bg-red-900 text-white py-3 rounded-md text-sm font-semibold
-                       hover:bg-red-800 transition-colors disabled:opacity-70
+            className="mt-4 bg-primary text-white py-3 rounded-md text-sm font-semibold
+                       hover:bg-primary transition-colors disabled:opacity-70
                        disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
           >
             {loading ? (
