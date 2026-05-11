@@ -123,8 +123,8 @@ export default function RecoverPasswordPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-116px)] flex items-start justify-center bg-[#f4f5f7] px-4 pt-10 md:pt-12">
-      <section className="w-full max-w-[420px] rounded-2xl bg-white px-8 py-10 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+    <main className="min-h-[calc(100vh-104px)] bg-[#f4f5f7] flex items-center justify-center px-4 py-4 md:py-5">
+    <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
         <div className="flex flex-col items-center text-center">
           <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#f3e6ea] text-[#87001f]">
             {icons.recover}
