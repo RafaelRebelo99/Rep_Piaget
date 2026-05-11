@@ -74,7 +74,7 @@ export default function Suporte() {
 
   const inputClass = (campo: string) =>
     `w-full mt-2 bg-gray-100 rounded-md px-4 py-3 text-sm outline-none border-2 transition-colors ${
-      campoErro === campo ? "border-primary bg-primary" : "border-transparent"
+      campoErro === campo ? "border-red-400 bg-red-50" : "border-transparent"
     }`;
 
   return (
