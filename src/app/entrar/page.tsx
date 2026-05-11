@@ -102,136 +102,134 @@ export default function RegisterForm() {
 }
 
   return (
-    <main className="min-h-[calc(100vh-116px)] flex items-start justify-center bg-[#f4f5f7] px-4 pt-8 md:pt-10">
-      <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-        <div className="flex flex-col items-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f3e6ea] text-[#87001f]">
-            {icons.graduation}
-          </div>
-
-          <h1 className="text-[26px] font-bold leading-tight text-[#071426]">
-            Bem-vindo ao REP
-          </h1>
-
-          <p className="mt-2 text-sm text-[#8b7480]">
-            Aceda ao repositório académico oficial.
-          </p>
+  <main className="min-h-[calc(100vh-116px)] flex items-center justify-center bg-[#f4f5f7] px-4 py-8 md:py-10">
+    <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f3e6ea] text-[#87001f]">
+          {icons.graduation}
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-9 space-y-6">
-          <div>
-            <label htmlFor="email" className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-[#3c2530]">
-              Email
-            </label>
+        <h1 className="text-[26px] font-bold leading-tight text-[#071426]">
+          Bem-vindo ao REP
+        </h1>
 
-            <div className="relative">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aaa5aa]">
-                {icons.email}
-              </span>
+        <p className="mt-2 text-sm text-[#8b7480]">
+          Aceda ao repositório académico oficial.
+        </p>
+      </div>
 
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value)
-                  setEmailError('')
-                }}
-                placeholder="exemplo@ipiaget.pt"
-                className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-4 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
-              />
-            </div>
+      <form onSubmit={handleSubmit} className="mt-9 space-y-6">
+        <div>
+          <label htmlFor="email" className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-[#3c2530]">
+            Email
+          </label>
 
-            {emailError && (
-              <p className="mt-2 text-xs font-medium text-[#87001f]">
-                {emailError}
-              </p>
-            )}
+          <div className="relative">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aaa5aa]">
+              {icons.email}
+            </span>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value)
+                setEmailError('')
+              }}
+              placeholder="exemplo@ipiaget.pt"
+              className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-4 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
+            />
           </div>
 
-          
+          {emailError && (
+            <p className="mt-2 text-xs font-medium text-[#87001f]">
+              {emailError}
+            </p>
+          )}
+        </div>
 
-          <div>
-            <label htmlFor="password" className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-[#3c2530]">
-              Palavra-passe
-            </label>
+        <div>
+          <label htmlFor="password" className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-[#3c2530]">
+            Palavra-passe
+          </label>
 
-            <div className="relative">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aaa5aa]">
-                {icons.lock}
-              </span>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aaa5aa]">
+              {icons.lock}
+            </span>
 
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(event) =>{
-                  setPassword(event.target.value)
-                  setPasswordError('')
-                }}
-                placeholder="••••••••"
-                className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-4 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
-              />
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                setPasswordError('')
+              }}
+              placeholder="••••••••"
+              className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-11 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
+            />
 
-             <button
-                type="button"
-                onPointerDown={(event) => {
+            <button
+              type="button"
+              onPointerDown={(event) => {
                 event.preventDefault()
                 setShowPassword(true)
               }}
-                onPointerUp={() => setShowPassword(false)}
-                onPointerLeave={() => setShowPassword(false)}
-                onPointerCancel={() => setShowPassword(false)}
-                onBlur={() => setShowPassword(false)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#87001f]"
-                aria-label="Manter premido para mostrar a palavra-passe"
-              >
-               {showPassword ? icons.eyeOff : icons.eye}
+              onPointerUp={() => setShowPassword(false)}
+              onPointerLeave={() => setShowPassword(false)}
+              onPointerCancel={() => setShowPassword(false)}
+              onBlur={() => setShowPassword(false)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#87001f]"
+              aria-label="Manter premido para mostrar a palavra-passe"
+            >
+              {showPassword ? icons.eyeOff : icons.eye}
             </button>
           </div>
-            
-            {passwordError && (
-              <p className="mt-2 text-xs font-medium text-[#87001f]">
-                {passwordError}
-              </p>
-            )}
-          </div>
 
-          <div className="flex items-center justify-between text-xs">
-            <label className="flex items-center gap-2 text-[#6f5b64]">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(event) => setRememberMe(event.target.checked)}
-                className="h-4 w-4 rounded border-[#dec7cf] text-[#87001f] focus:ring-[#87001f]"
-              />
-              Lembrar-me
-            </label>
+          {passwordError && (
+            <p className="mt-2 text-xs font-medium text-[#87001f]">
+              {passwordError}
+            </p>
+          )}
+        </div>
 
-            <Link href="/recuperar-password" className="font-semibold text-[#87001f] hover:underline">
-              Esqueceu a palavra-passe?
-            </Link>
-          </div>
+        <div className="flex items-center justify-between text-xs">
+          <label className="flex items-center gap-2 text-[#6f5b64]">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(event) => setRememberMe(event.target.checked)}
+              className="h-4 w-4 rounded border-[#dec7cf] text-[#87001f] focus:ring-[#87001f]"
+            />
+            Lembrar-me
+          </label>
 
-          <button
-            type="submit"
-            className="h-12 w-full rounded-md bg-[#87001f] text-sm font-bold text-white shadow-[0_8px_16px_rgba(135,0,31,0.25)] transition hover:bg-[#74001b] focus:outline-none focus:ring-2 focus:ring-[#87001f] focus:ring-offset-2"
-          >
-            Entrar
-          </button>
-        </form>
-
-        <div className="my-9 h-px w-full bg-[#ebe5e8]" />
-
-        <p className="text-center text-xs text-[#6f5b64]">
-          Não tem conta?{' '}
-          <Link href="/registar" className="font-bold text-[#87001f] hover:underline">
-            Registar
+          <Link href="/recuperar-password" className="font-semibold text-[#87001f] hover:underline">
+            Esqueceu a palavra-passe?
           </Link>
-        </p>
-      </section>
-    </main>
-  )
+        </div>
+
+        <button
+          type="submit"
+          className="h-12 w-full rounded-md bg-[#87001f] text-sm font-bold text-white shadow-[0_8px_16px_rgba(135,0,31,0.25)] transition hover:bg-[#74001b] focus:outline-none focus:ring-2 focus:ring-[#87001f] focus:ring-offset-2"
+        >
+          Entrar
+        </button>
+      </form>
+
+      <div className="my-9 h-px w-full bg-[#ebe5e8]" />
+
+      <p className="text-center text-xs text-[#6f5b64]">
+        Não tem conta?{' '}
+        <Link href="/registar" className="font-bold text-[#87001f] hover:underline">
+          Registar
+        </Link>
+      </p>
+    </section>
+  </main>
+)
 }
