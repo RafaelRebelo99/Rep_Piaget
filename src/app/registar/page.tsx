@@ -106,8 +106,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-116px)] flex items-start justify-center bg-[#f4f5f7] px-4 pt-10 md:pt-12">
-      <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-10 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+  <main className="min-h-[calc(100vh-104px)] bg-[#f4f5f7] flex items-center justify-center px-4 py-4 md:py-5">
+    <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
         <h1 className="text-center text-[26px] font-bold leading-tight text-[#071426]">
           Criar Conta
         </h1>
