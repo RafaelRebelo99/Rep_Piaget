@@ -35,7 +35,9 @@ O projeto já tem tudo configurado no `package.json`. Basta executares o comando
 npm install
 ```
 
-### 4. Configurar as Variáveis (Supabase API)
+### 4. Configurar as Variáveis 
+- (Supabase API)
+
 Para que a aplicação consiga comunicar com a base de dados e com a autenticação do Supabase, precisas de configurar as tuas chaves de API locais.
 
 1. Duplica o ficheiro de template das variáveis de ambiente criando o teu ficheiro local:
@@ -49,6 +51,17 @@ Para que a aplicação consiga comunicar com a base de dados e com a autenticaç
    NEXT_PUBLIC_SUPABASE_URL=https://teu-id-de-projeto.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=tua-chave-anon-public...
    ```
+- (Resend API)
+
+1. Para que o formulário de suporte consiga enviar emails, precisas de configurar a tua chave de API do Resend.
+2. Vai ao Dashboard do Resend em [resend.com](https://resend.com), faz login e navega para **API Keys**.
+3. Clica em **Create API Key** e copia a chave gerada.
+4. Abre o ficheiro `.env.local` e preenche o respetivo valor:
+   ```env
+    RESEND_API_KEY=re_xxxxxxxxxxxxxxxx
+   ```
+> ⚠️ Em modo de teste o Resend só permite enviar emails para o endereço com que criaste a conta. Para usar um domínio próprio navega para **Domains → Add Domain** no dashboard do Resend.
+
 *Aviso de Segurança: O ficheiro `.env.local` está incluído no `.gitignore` e **nunca** deve ser enviado para o GitHub, contém credenciais sensíveis!*
 
 ### 5. Executar em Dev Mode
