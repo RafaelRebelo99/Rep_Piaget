@@ -5,95 +5,27 @@ import { FormEvent, useState } from 'react'
 
 const icons = {
   recover: (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-7 w-7"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M3 10a9 9 0 0115.6-6.1L21 6"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M21 3v3h-3"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 7v5l3 2"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M21 14a9 9 0 11-17.6-3"
-      />
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10a9 9 0 0115.6-6.1L21 6" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 3v3h-3" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7v5l3 2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 14a9 9 0 11-17.6-3" />
     </svg>
   ),
   email: (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-      />
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
     </svg>
   ),
   send: (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M3 10l18-7-7 18-2.5-7.5L3 10z"
-      />
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10l18-7-7 18-2.5-7.5L3 10z" />
     </svg>
   ),
   back: (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-4 w-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 19l-7-7 7-7"
-      />
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
     </svg>
   ),
 }
@@ -102,29 +34,58 @@ export default function RecoverPasswordPage() {
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const normalEmail = email.trim().toLowerCase()
 
-    if (!normalEmail.endsWith('@ipiaget.pt')) {
+    if (
+      !normalEmail.endsWith('@ipiaget.pt') &&
+      !normalEmail.endsWith('@rep.pt')
+    ) {
       setSuccessMessage('')
       setEmailError('Por favor, introduza o seu email institucional.')
       return
     }
 
     setEmailError('')
-    setSuccessMessage('Se o email existir, receberá instruções de recuperação.')
+    setSuccessMessage('')
+    setLoading(true)
 
-    console.log({
-      email: normalEmail,
-    })
+    try {
+      const res = await fetch('/api/recuperar-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: normalEmail,
+        }),
+      })
+
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setEmailError(data?.error || 'Não foi possível enviar o email.')
+        return
+      }
+
+      setSuccessMessage(
+        data?.message || 'Se o email existir, receberá instruções de recuperação.'
+      )
+    } catch (error) {
+      console.error('Erro ao recuperar password:', error)
+      setEmailError('Erro de ligação. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <main className="min-h-[calc(100vh-104px)] bg-[#f4f5f7] flex items-center justify-center px-4 py-4 md:py-5">
-    <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+      <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
         <div className="flex flex-col items-center text-center">
           <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#f3e6ea] text-[#87001f]">
             {icons.recover}
@@ -139,7 +100,7 @@ export default function RecoverPasswordPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <form noValidate onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>
             <label
               htmlFor="email"
@@ -183,10 +144,11 @@ export default function RecoverPasswordPage() {
 
           <button
             type="submit"
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#87001f] text-sm font-bold text-white shadow-[0_8px_16px_rgba(135,0,31,0.25)] transition hover:bg-[#74001b] focus:outline-none focus:ring-2 focus:ring-[#87001f] focus:ring-offset-2"
+            disabled={loading}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#87001f] text-sm font-bold text-white shadow-[0_8px_16px_rgba(135,0,31,0.25)] transition hover:bg-[#74001b] focus:outline-none focus:ring-2 focus:ring-[#87001f] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Enviar Instruções
-            {icons.send}
+            {loading ? 'A enviar...' : 'Enviar Instruções'}
+            {!loading && icons.send}
           </button>
         </form>
 
