@@ -122,7 +122,8 @@ export async function POST(req: Request) {
         name: normalName,
       },
     })
-  } catch {
+  } catch (error){
+    console.log('Erro no backend de registo:', error)
     return NextResponse.json(
       { error: 'Erro ao criar conta.' },
       { status: 500 }

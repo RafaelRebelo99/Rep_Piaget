@@ -1,21 +1,22 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
+
 const icons = {
-    eye: (
+  eye: (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
     </svg>
-    ),
-
-    eyeOff: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.5-7a9.951 9.951 0 011.667-4.826M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7.586 7.586l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414z" />
-      </svg>
-    ),
+  ),
+  eyeOff: (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.5-7a9.951 9.951 0 011.667-4.826M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7.586 7.586l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414z" />
+    </svg>
+  ),
 }
 
 const weakPasswords = [
@@ -30,6 +31,8 @@ const weakPasswords = [
 ]
 
 export default function RegisterPage() {
+  const router = useRouter()
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -39,12 +42,13 @@ export default function RegisterPage() {
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
     const normalName = name.trim()
     const normalEmail = email.trim().toLowerCase()
     const normalPassword = password.trim()
@@ -60,7 +64,10 @@ export default function RegisterPage() {
       setNameError('')
     }
 
-    if (!normalEmail.endsWith('@ipiaget.pt')) {
+    if (
+      !normalEmail.endsWith('@ipiaget.pt') && 
+      !normalEmail.endsWith('@rep.pt')
+    ) {
       setEmailError('Por favor, introduza o seu email institucional.')
       hasError = true
     } else {
@@ -98,16 +105,40 @@ export default function RegisterPage() {
 
     if (hasError) return
 
-    console.log({
-      name: normalName,
-      email: normalEmail,
-      password,
-    })
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/registar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }, 
+        body: JSON.stringify({
+          name: normalName,
+          email: normalEmail,
+          password,
+          confirmPassword,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setPasswordError(data.error || 'Não foi possível criar a conta.')
+        return
+      }
+
+      router.push('/entrar')
+    } catch {
+      setPasswordError('Erro de ligação. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-  <main className="min-h-[calc(100vh-104px)] bg-[#f4f5f7] flex items-center justify-center px-4 py-4 md:py-5">
-    <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+    <main className="min-h-[calc(100vh-104px)] bg-[#f4f5f7] flex items-center justify-center px-4 py-4 md:py-5">
+      <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
         <h1 className="text-center text-[26px] font-bold leading-tight text-[#071426]">
           Criar Conta
         </h1>
@@ -170,86 +201,87 @@ export default function RegisterPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-  <div>
-    <label
-      htmlFor="password"
-      className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-[#6b3d4a]"
-    >
-      Palavra-passe
-    </label>
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-[#6b3d4a]"
+              >
+                Palavra-passe
+              </label>
 
-    <div className="relative w-full">
-      <input
-        id="password"
-        name="password"
-        type={showPassword ? 'text' : 'password'}
-        value={password}
-        onChange={(event) => {
-          setPassword(event.target.value)
-          setPasswordError('')
-        }}
-        placeholder="••••••••"
-        className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] px-4 pr-10 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
-      />
+              <div className="relative w-full">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(event) => {
+                    setPassword(event.target.value)
+                    setPasswordError('')
+                  }}
+                  placeholder="••••••••"
+                  className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] px-4 pr-10 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
+                />
 
-      <button
-        type="button"
-        onPointerDown={(event) => {
-          event.preventDefault()
-          setShowPassword(true)
-        }}
-        onPointerUp={() => setShowPassword(false)}
-        onPointerLeave={() => setShowPassword(false)}
-        onPointerCancel={() => setShowPassword(false)}
-        onBlur={() => setShowPassword(false)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#87001f]"
-        aria-label="Manter premido para mostrar a palavra-passe"
-      >
-        {showPassword ? icons.eyeOff : icons.eye}
-      </button>
-    </div>
-  </div>
+                <button
+                  type="button"
+                  onPointerDown={(event) => {
+                    event.preventDefault()
+                    setShowPassword(true)
+                  }}
+                  onPointerUp={() => setShowPassword(false)}
+                  onPointerLeave={() => setShowPassword(false)}
+                  onPointerCancel={() => setShowPassword(false)}
+                  onBlur={() => setShowPassword(false)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#87001f]"
+                  aria-label="Manter premido para mostrar a palavra-passe"
+                >
+                  {showPassword ? icons.eyeOff : icons.eye}
+                </button>
+              </div>
+            </div>
 
-  <div>
-    <label
-      htmlFor="confirmPassword"
-      className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-[#6b3d4a]"
-    >
-      Confirmar
-    </label>
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="mb-2 block text-[10px] font-bold uppercase tracking-[0.16em] text-[#6b3d4a]"
+              >
+                Confirmar
+              </label>
 
-    <div className="relative w-full">
-      <input
-        id="confirmPassword"
-        name="confirmPassword"
-        type={showConfirmPassword ? 'text' : 'password'}
-        value={confirmPassword}
-        onChange={(event) => {
-          setConfirmPassword(event.target.value)
-          setConfirmPasswordError('')
-        }}
-        placeholder="••••••••"
-        className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] px-4 pr-10 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
-      />
+              <div className="relative w-full">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value)
+                    setConfirmPasswordError('')
+                  }}
+                  placeholder="••••••••"
+                  className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] px-4 pr-10 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
+                />
 
-      <button
-        type="button"
-        onPointerDown={(event) => {
-          event.preventDefault()
-          setShowConfirmPassword(true)
-        }}
-        onPointerUp={() => setShowConfirmPassword(false)}
-        onPointerLeave={() => setShowConfirmPassword(false)}
-        onPointerCancel={() => setShowConfirmPassword(false)}
-        onBlur={() => setShowConfirmPassword(false)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#87001f]"
-        aria-label="Manter premido para mostrar a confirmação da palavra-passe"
-      >
-        {showConfirmPassword ? icons.eyeOff : icons.eye}
-      </button>
-    </div>
-  </div>
-</div>
+                <button
+                  type="button"
+                  onPointerDown={(event) => {
+                    event.preventDefault()
+                    setShowConfirmPassword(true)
+                  }}
+                  onPointerUp={() => setShowConfirmPassword(false)}
+                  onPointerLeave={() => setShowConfirmPassword(false)}
+                  onPointerCancel={() => setShowConfirmPassword(false)}
+                  onBlur={() => setShowConfirmPassword(false)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#87001f]"
+                  aria-label="Manter premido para mostrar a confirmação da palavra-passe"
+                >
+                  {showConfirmPassword ? icons.eyeOff : icons.eye}
+                </button>
+              </div>
+            </div>
+          </div>
+
           {(passwordError || confirmPasswordError) && (
             <div className="space-y-1">
               {passwordError && (
@@ -268,9 +300,10 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="h-12 w-full rounded-md bg-[#87001f] text-sm font-bold text-white shadow-[0_8px_16px_rgba(135,0,31,0.25)] transition hover:bg-[#74001b] focus:outline-none focus:ring-2 focus:ring-[#87001f] focus:ring-offset-2"
+            disabled={loading}
+            className="h-12 w-full rounded-md bg-[#87001f] text-sm font-bold text-white shadow-[0_8px_16px_rgba(135,0,31,0.25)] transition hover:bg-[#74001b] focus:outline-none focus:ring-2 focus:ring-[#87001f] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Registar
+            {loading ? 'A registar...' : 'Registar'}
           </button>
         </form>
 
