@@ -26,24 +26,30 @@ export async function POST(req: Request) {
       )
     }
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return NextResponse.json(
+        { error: 'Configuração do Supabase em falta.' },
+        { status: 500 }
+      )
+    }
+
     const cookieStore = await cookies()
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options)
-            })
-          },
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
         },
-      }
-    )
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options)
+          })
+        },
+      },
+    })
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: normalEmail,
@@ -65,7 +71,9 @@ export async function POST(req: Request) {
         email: data.user.email,
       },
     })
-  } catch {
+  } catch (error) {
+    console.error('Erro no backend de login:', error)
+
     return NextResponse.json(
       { error: 'Erro ao iniciar sessão.' },
       { status: 500 }
