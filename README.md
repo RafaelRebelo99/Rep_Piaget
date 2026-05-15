@@ -1,7 +1,10 @@
 # Projeto Integrador - Repositório para estudantes do Piaget 📚
+
 Licenciatura em Engenharia Informática do Instituto Piaget 25/26
 
 O REP é uma plataforma académica desenvolvida para os alunos dos cursos tecnológicos do instituto Piaget (Almada), com o objetivo de centralizar materiais de estudo, feedback de disciplinas e apoio ao estudo através de Inteligência Artificial.
+
+> [Aceder à Documentação Oficial](https://rafaelrebelo99.github.io/Rep_Piaget/)
 
 ## 🧠 Objetivos
 - Facilitar o acesso a materias académicos (resumos, exames e apontamentos) através de upload e dowload de ficheiros
