@@ -7,6 +7,8 @@ import DisciplineCard from '@/components/DisciplineCard'
 interface Discipline {
   id: string
   name: string
+  materials: { count: number }[]
+  feedbacks: { count: number }[]
 }
 
 interface CourseDiscipline {
