@@ -13,7 +13,7 @@ interface Props {
 
 export default function FeaturedCourseCard({ id, name, type, description, totalDisciplines, duration, ects }: Props) {
   return (
-    <Link href={`/${id}`} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col md:flex-row gap-6 items-center">
+    <Link href={`/cursos/${id}`} className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col md:flex-row gap-6 items-center">
       <div className="w-40 h-32 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 text-primary">
         <Computer className="w-12 h-12" />
       </div>

@@ -29,10 +29,12 @@ export default function DisciplinesSection({ disciplines, tipo }: Props) {
   const [query, setQuery] = useState('')
   const [ano, setAno] = useState<number | null>(null)
 
-  const filtered = disciplines.filter((cd) =>
-    (ano === null || cd.year === ano) &&
-    normalize(cd.discipline.name).includes(normalize(query))
-  )
+  const filtered = disciplines
+    .filter((cd) =>
+      (ano === null || cd.year === ano) &&
+      normalize(cd.discipline.name).includes(normalize(query))
+    )
+    .sort((a, b) => a.year - b.year)
 
   return (
     <div className="flex flex-col gap-6">
@@ -72,7 +74,7 @@ export default function DisciplinesSection({ disciplines, tipo }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.length > 0 ? (
           filtered.map((cd) => (
-            <DisciplineCard key={cd.discipline_id} discipline={cd.discipline} />
+            <DisciplineCard key={cd.discipline_id} discipline={cd.discipline} year={cd.year} />
           ))
         ) : (
           <p className="col-span-3 text-center text-gray-400 text-sm py-10">Nenhuma disciplina encontrada.</p>

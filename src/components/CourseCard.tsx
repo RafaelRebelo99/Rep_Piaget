@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Shield, BracesIcon,Cloud,Gamepad , BarChart2, Cpu, Palette, BookOpen } from 'lucide-react'
+import { Shield, BracesIcon, Cloud, Gamepad, Cpu, Palette, BookOpen } from 'lucide-react'
 
 const courseIcons: Record<string, React.ReactNode> = {
   'Cibersegurança': <Shield className="w-5 h-5" />,
@@ -21,7 +21,7 @@ export default function CourseCard({ id, name, type, totalDisciplines }: Props) 
   const icon = courseIcons[name] ?? <BookOpen className="w-5 h-5" />
 
   return (
-    <Link href={`/${id}`} className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col h-full">
+    <Link href={`/cursos/${id}`} className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col h-full">
       <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-primary mb-3 shrink-0">
         {icon}
       </div>

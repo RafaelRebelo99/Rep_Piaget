@@ -5,16 +5,23 @@ interface DisciplineCardProps {
     materials: { count: number }[]
     feedbacks: { count: number }[]
   }
+  year?: number
 }
 
-export default function DisciplineCard({ discipline }: DisciplineCardProps) {
+export default function DisciplineCard({ discipline, year }: DisciplineCardProps) {
   const materialsCount = discipline.materials?.[0]?.count ?? 0
   const feedbacksCount = discipline.feedbacks?.[0]?.count ?? 0
 
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col gap-3">
       <div className="flex items-start justify-between">
-        <span> </span>
+        {year ? (
+          <span className="text-xs font-semibold text-primary bg-red-50 px-2 py-1 rounded-full">
+            {year}º Ano
+          </span>
+        ) : (
+          <span />
+        )}
         <button className="text-gray-400 hover:text-gray-600" aria-label="Opções p">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="5" r="1.5" />
