@@ -23,7 +23,7 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
 
         {/* Breadcrumb */}
         <nav className="text-xs text-gray-400 mb-6 text-center" aria-label="Breadcrumb">
-          <Link href="/cursos" className="hover:text-primary transition-colors">Cursos</Link>
+          <Link href="/" className="hover:text-primary transition-colors">Cursos</Link>
           <span className="mx-2">›</span>
           <span className="text-gray-600">{curso?.name}</span>
         </nav>
