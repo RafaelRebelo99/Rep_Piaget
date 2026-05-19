@@ -63,12 +63,36 @@ export async function POST(req: Request) {
       )
     }
 
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, role, can_upload')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profileError || !profile) {
+      console.error('Erro ao obter perfil:', profileError)
+
+      return NextResponse.json(
+        { error: 'Perfil do utilizador não encontrado.' },
+        { status: 404 }
+      )
+    }
+
+    console.log('Entrou com sucesso:', {
+      id: data.user.id,
+      email: data.user.email,
+      role: profile.role,
+    })
+
     return NextResponse.json({
       success: true,
       message: 'Login efetuado com sucesso.',
       user: {
         id: data.user.id,
         email: data.user.email,
+        fullName: profile.full_name,
+        role: profile.role,
+        canUpload: profile.can_upload,
       },
     })
   } catch (error) {

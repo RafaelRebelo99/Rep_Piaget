@@ -92,16 +92,29 @@ export default function LoginForm() {
         }),
       })
 
-      const data = await response.json().catch(() => null)
+const data = await response.json().catch(() => null)
 
-      if (!response.ok) {
-        setPasswordError(data?.error || 'Email ou palavra-passe inválidos.')
-        return
-      }
+console.log('Resposta do login:', {
+  status: response.status,
+  ok: response.ok,
+  data,
+})
 
-      console.log('Entrou com sucesso:', data.user)
+if (!response.ok || !data?.user) {
+  setPasswordError(data?.error || 'Email ou palavra-passe inválidos.')
+  return
+}
 
-      router.push('/main')
+console.log('Entrou com sucesso no frontend:', data.user)
+
+if (data.user.role === 'ADMIN') {
+  router.push('/admin')
+} else {
+  router.push('/main')
+}
+
+router.refresh()
+
     } catch (error) {
       console.error('Erro no login:', error)
       setPasswordError('Erro de ligação. Tente novamente.')
