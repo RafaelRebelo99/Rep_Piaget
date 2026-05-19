@@ -1,3 +1,8 @@
+'use client'
+
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+
 interface DisciplineCardProps {
   discipline: {
     id: string
@@ -11,9 +16,12 @@ interface DisciplineCardProps {
 export default function DisciplineCard({ discipline, year }: DisciplineCardProps) {
   const materialsCount = discipline.materials?.[0]?.count ?? 0
   const feedbacksCount = discipline.feedbacks?.[0]?.count ?? 0
+  
+  const params = useParams()
+  const cursoId = params?.cursoId as string
 
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col gap-3">
+    <Link href={`/cursos/${cursoId}/${discipline.id}`} className="group bg-white rounded-xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col gap-3 h-full border-2 border-transparent hover:border-primary/40">
       <div className="flex items-start justify-between">
         {year ? (
           <span className="text-xs font-semibold text-primary bg-red-50 px-2 py-1 rounded-full">
@@ -22,16 +30,16 @@ export default function DisciplineCard({ discipline, year }: DisciplineCardProps
         ) : (
           <span />
         )}
-        <button className="text-gray-400 hover:text-gray-600" aria-label="Opções p">
+        <div className="text-gray-400 hover:text-primary transition-colors duration-200" aria-label="Opções">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="5" r="1.5" />
             <circle cx="12" cy="12" r="1.5" />
             <circle cx="12" cy="19" r="1.5" />
           </svg>
-        </button>
+        </div>
       </div>
 
-      <h3 className="text-sm font-semibold text-gray-800 leading-snug">{discipline.name}</h3>
+      <h3 className="text-sm font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300 leading-snug">{discipline.name}</h3>
 
       <div className="mt-auto flex items-center gap-4 text-xs text-primary pt-3 border-t border-gray-50">
         <span className="flex items-center gap-1">
@@ -47,6 +55,6 @@ export default function DisciplineCard({ discipline, year }: DisciplineCardProps
           {feedbacksCount}
         </span>
       </div>
-    </div>
+    </Link>
   )
 }
