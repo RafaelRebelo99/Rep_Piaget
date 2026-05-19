@@ -1,8 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+type AuthUser = {
+  id: string
+  email: string
+  fullName: string
+  role: 'USER' | 'ADMIN' | string
+} | null
 
 const navLinks = [
   {
@@ -49,7 +56,48 @@ const authLinks = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [user, setUser] = useState<AuthUser>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
   const pathname = usePathname()
+  const router = useRouter()
+
+  useEffect(() => {
+  async function loadUser() {
+    setAuthLoading(true)
+
+    try {
+      const res = await fetch('/api/me', {
+        cache: 'no-store',
+      })
+
+      const data = await res.json().catch(() => null)
+
+      setUser(data?.user || null)
+    } catch {
+      setUser(null)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  loadUser()
+}, [pathname])
+
+
+  async function handleLogout() {
+    await fetch('/api/logout', {
+      method: 'POST',
+    })
+
+    setUser(null)
+    setMenuOpen(false)
+    router.push('/entrar')
+    router.refresh()
+  }
+
+  const mobileLinks = user ? navLinks : [...navLinks, ...authLinks]
+
 
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
@@ -57,7 +105,6 @@ export default function Navbar() {
         className="max-w-6xl mx-auto px-4 h-14 flex items-center"
         aria-label="Navegação principal"
       >
-        {/* Desktop: logo esquerda */}
         <Link
           href="/"
           className="hidden md:block text-primary font-bold text-xl tracking-tight"
@@ -66,10 +113,10 @@ export default function Navbar() {
           REP
         </Link>
 
-        {/* Desktop: links centro */}
         <div className="hidden md:flex flex-1 items-center justify-center gap-8">
           {navLinks.map(({ href, label }) => {
             const isActive = pathname === href
+            
             return (
               <Link
                 key={href}
@@ -85,22 +132,57 @@ export default function Navbar() {
               </Link>
             )
           })}
+
+          {user?.role === 'ADMIN' && (
+            <Link
+              href="/admin"
+              aria-current={pathname === '/admin' ? 'page' : undefined}
+              className={`text-sm transition-colors pb-1 border-b-2 ${
+                pathname === '/admin'
+                  ? 'text-primary border-[#8B1A1A]'
+                  : 'text-gray-600 border-transparent hover:text-primary'
+              }`}
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
-        {/* Desktop: botões auth direita */}
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/entrar" className="text-sm text-gray-600 hover:text-primary transition-colors">
-            Entrar
-          </Link>
-          <Link
-            href="/registar"
-            className="text-sm text-white bg-primary px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          >
-            Registar
-          </Link>
+          {authLoading ? null : user ? (
+            <>
+              <div className="text-right leading-tight">
+                <p className="max-w-[160px] truncate text-sm font-semibold text-gray-800">
+                  {user.fullName}
+                </p>
+                <p className="text-[11px] font-bold uppercase text-primary">
+                  {user.role === 'ADMIN' ? 'Admin' : 'Utilizador'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-sm text-white bg-primary px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                Sair
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/entrar" className="text-sm text-gray-600 hover:text-primary transition-colors">
+                Entrar
+              </Link>
+              <Link
+                href="/registar"
+                className="text-sm text-white bg-primary px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                Registar
+              </Link>
+            </>
+          )}
         </div>
 
-        {/* Mobile: logo centrado + hamburger direita */}
         <div className="flex md:hidden w-full items-center justify-between">
           <div className="w-10" />
 
@@ -111,27 +193,32 @@ export default function Navbar() {
           >
             REP
           </Link>
+<button
+  className="w-10 h-10 flex items-center justify-center rounded-lg text-gray-500 hover:text-primary hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+  aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+  aria-controls="mobile-menu"
+  onClick={() => setMenuOpen(!menuOpen)}
+>
 
-          <button
-            className="w-10 h-10 flex items-center justify-center rounded-lg text-gray-500 hover:text-primary hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-            aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              {menuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5 transition-transform duration-200"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
+    {menuOpen ? (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    ) : (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    )}
+  </svg>
+</button>
+
         </div>
       </nav>
 
-
-      {/* Mobile menu — slide abaixo da navbar */}
       <div
         id="mobile-menu"
         role="dialog"
@@ -141,9 +228,8 @@ export default function Navbar() {
           menuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        {/* Links de navegação */}
         <div className="flex flex-col gap-1 px-4 py-4">
-          {[...navLinks, ...authLinks].map(({ href, label, icon }) => {
+          {mobileLinks.map(({ href, label, icon }) => {
             const isActive = pathname === href
             return (
               <Link
@@ -162,6 +248,41 @@ export default function Navbar() {
               </Link>
             )
           })}
+
+          {user?.role === 'ADMIN' && (
+            <Link
+              href="/admin"
+              onClick={() => setMenuOpen(false)}
+              className={`flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                pathname === '/admin'
+                  ? 'bg-primary text-white'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-primary'
+              }`}
+            >
+              Admin
+            </Link>
+          )}
+
+          {!authLoading && user && (
+            <div className="mt-3 border-t border-gray-100 pt-4">
+              <div className="mb-3 text-center">
+                <p className="text-sm font-semibold text-gray-800">
+                  {user.fullName}
+                </p>
+                <p className="text-xs font-bold uppercase text-primary">
+                  {user.role === 'ADMIN' ? 'Admin' : 'Utilizador'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white"
+              >
+                Sair
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
