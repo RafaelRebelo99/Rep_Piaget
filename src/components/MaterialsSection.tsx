@@ -37,15 +37,15 @@ export default function MaterialsSection({ materials, disciplineName, discipline
 
   return (
     <section className="lg:col-span-7">
-      
+
       {/* Barra de Pesquisa */}
       <div className="mb-8">
-        <SearchBar 
-          placeholder={`Pesquisar em ${disciplineName}...`} 
+        <SearchBar
+          placeholder={`Pesquisar em ${disciplineName}...`}
           onSearch={(value) => {
             setSearchQuery(value)
-            setVisibleCount(10) // Reinicia a paginação ao pesquisar
-          }} 
+            setVisibleCount(10)
+          }}
         />
       </div>
 
