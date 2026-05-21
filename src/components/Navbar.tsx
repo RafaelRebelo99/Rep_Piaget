@@ -77,7 +77,7 @@ export default function Navbar() {
                 aria-current={isActive ? 'page' : undefined}
                 className={`text-sm transition-colors pb-1 border-b-2 ${
                   isActive
-                    ? 'text-primary border-[#8B1A1A]'
+                    ? 'text-primary border-primary'
                     : 'text-gray-600 border-transparent hover:text-primary'
                 }`}
               >
