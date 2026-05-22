@@ -106,6 +106,14 @@ if (!response.ok || !data?.user) {
 }
 
 console.log('Entrou com sucesso no frontend:', data.user)
+window.dispatchEvent(
+  new CustomEvent('rep-auth-changed', {
+    detail: data.user,
+  })
+)
+
+sessionStorage.setItem('rep-user', JSON.stringify(data.user))
+window.dispatchEvent(new Event('rep-auth-changed'))
 
 if (data.user.role === 'ADMIN') {
   router.push('/admin')
