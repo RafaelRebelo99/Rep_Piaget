@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 
 const icons = {
   graduation: (
@@ -50,15 +50,56 @@ export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  const [failedAttempts, setFailedAttempts] = useState(0)
+  const [blockedUntil, setBlockedUntil] = useState<number | null>(null)
+  const [remainingSeconds, setRemainingSeconds] = useState(0)
+
   const normalEmail = email.trim().toLowerCase()
+  const emailHasSpaces = /\s/.test(email)
   const normalPassword = password.trim()
+
+  const isBlocked = blockedUntil !== null
+
+  useEffect(() => {
+    if (blockedUntil === null) return
+
+    const currentBlockedUntil = blockedUntil
+
+    function updateRemainingTime() {
+      const remaining = Math.ceil((currentBlockedUntil - Date.now()) / 1000)
+
+      if (remaining <= 0) {
+        setBlockedUntil(null)
+        setFailedAttempts(0)
+        setRemainingSeconds(0)
+        setPasswordError('')
+        return
+      }
+
+      setRemainingSeconds(remaining)
+    }
+
+    updateRemainingTime()
+
+    const interval = window.setInterval(updateRemainingTime, 1000)
+
+    return () => window.clearInterval(interval)
+  }, [blockedUntil])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
+    if (isBlocked) {
+      setPasswordError('Tentativas excedidas, aguarde 30 segundos até poder tentar novamente.')
+      return
+    }
+
     let hasError = false
 
-    if (
+    if (emailHasSpaces) {
+      setEmailError('O email não pode conter espaços.')
+      hasError = true
+    } else if (
       !normalEmail.endsWith('@ipiaget.pt') &&
       !normalEmail.endsWith('@rep.pt')
     ) {
@@ -95,9 +136,28 @@ export default function LoginForm() {
       const data = await response.json().catch(() => null)
 
       if (!response.ok || !data?.user) {
-        setPasswordError(data?.error || 'Email ou palavra-passe inválidos.')
+        const nextAttempts = failedAttempts + 1
+        setFailedAttempts(nextAttempts)
+
+        if (nextAttempts >= 3) {
+          const lockTimeMs = 30 * 1000
+          const until = Date.now() + lockTimeMs
+
+          setBlockedUntil(until)
+          setRemainingSeconds(30)
+          setPasswordError('Tentativas excedidas, aguarde 30 segundos até poder tentar novamente.')
+          return
+        }
+
+        setPasswordError(
+          `Email ou palavra-passe inválidos. Restam ${3 - nextAttempts} tentativa(s).`
+        )
         return
       }
+
+      setFailedAttempts(0)
+      setBlockedUntil(null)
+      setRemainingSeconds(0)
 
       window.dispatchEvent(
         new CustomEvent('rep-auth-changed', {
@@ -131,7 +191,7 @@ export default function LoginForm() {
           </h1>
 
           <p className="mt-2 text-sm text-[#8b7480]">
-            Aceda ao repositório académico oficial.
+            Aceda ao repositório académico
           </p>
         </div>
 
@@ -151,7 +211,7 @@ export default function LoginForm() {
                 name="email"
                 type="email"
                 value={email}
-                disabled={loading}
+                disabled={loading || isBlocked}
                 onChange={(event) => {
                   setEmail(event.target.value)
                   setEmailError('')
@@ -183,7 +243,7 @@ export default function LoginForm() {
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                disabled={loading}
+                disabled={loading || isBlocked}
                 onChange={(event) => {
                   setPassword(event.target.value)
                   setPasswordError('')
@@ -194,7 +254,7 @@ export default function LoginForm() {
 
               <button
                 type="button"
-                disabled={loading}
+                disabled={loading || isBlocked}
                 onPointerDown={(event) => {
                   event.preventDefault()
                   setShowPassword(true)
@@ -222,7 +282,7 @@ export default function LoginForm() {
               <input
                 type="checkbox"
                 checked={rememberMe}
-                disabled={loading}
+                disabled={loading || isBlocked}
                 onChange={(event) => setRememberMe(event.target.checked)}
                 className="h-4 w-4 rounded border-[#dec7cf] text-[#87001f] focus:ring-[#87001f] disabled:opacity-70"
               />
@@ -236,10 +296,10 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isBlocked}
             className="h-12 w-full rounded-md bg-[#87001f] text-sm font-bold text-white shadow-[0_8px_16px_rgba(135,0,31,0.25)] transition hover:bg-[#74001b] focus:outline-none focus:ring-2 focus:ring-[#87001f] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? 'A entrar...' : 'Entrar'}
+            {loading ? 'A entrar...' : isBlocked ? `Aguarde ${remainingSeconds}s` : 'Entrar'}
           </button>
 
           {loading && (

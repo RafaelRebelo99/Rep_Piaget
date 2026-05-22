@@ -54,6 +54,7 @@ export default function RegisterPage() {
     const normalEmail = email.trim().toLowerCase()
     const normalPassword = password.trim()
     const passwordLower = normalPassword.toLowerCase()
+    const emailHasSpaces = /\s/.test(email)
     const emailUsername = normalEmail.split('@')[0]
 
     let hasError = false
@@ -65,21 +66,24 @@ export default function RegisterPage() {
       setNameError('')
     }
 
-    if (
-      !normalEmail.endsWith('@ipiaget.pt') &&
-      !normalEmail.endsWith('@rep.pt')
-    ) {
-      setEmailError('Por favor, introduza o seu email institucional.')
-      hasError = true
-    } else {
-      setEmailError('')
-    }
+    if (emailHasSpaces) {
+  setEmailError('O email não pode conter espaços.')
+  hasError = true
+} else if (
+  !normalEmail.endsWith('@ipiaget.pt') &&
+  !normalEmail.endsWith('@rep.pt')
+) {
+  setEmailError('Por favor, introduza o seu email institucional.')
+  hasError = true
+} else {
+  setEmailError('')
+}
 
     if (!normalPassword) {
       setPasswordError('Por favor, introduza uma palavra-passe.')
       hasError = true
     } else if (normalPassword.length < 8) {
-      setPasswordError('A palavra-passe deve ter pelo menos 8 caracteres.')
+      setPasswordError('A palavra-passe deve ter no mínimo 8 caracteres.')
       hasError = true
     } else if (weakPasswords.includes(passwordLower)) {
       setPasswordError('A palavra-passe é muito fraca.')
@@ -125,9 +129,16 @@ export default function RegisterPage() {
       const data = await res.json().catch(() => null)
 
       if (!res.ok) {
-        setPasswordError(data?.error || 'Não foi possível criar a conta.')
-        return
-      }
+  const message = data?.error || 'Não foi possível criar a conta.'
+
+  if (res.status === 409) {
+    setEmailError(message)
+  } else {
+    setPasswordError(message)
+  }
+
+  return
+}
 
       router.push('/entrar')
     } catch {
