@@ -92,37 +92,24 @@ export default function LoginForm() {
         }),
       })
 
-const data = await response.json().catch(() => null)
+      const data = await response.json().catch(() => null)
 
-console.log('Resposta do login:', {
-  status: response.status,
-  ok: response.ok,
-  data,
-})
+      if (!response.ok || !data?.user) {
+        setPasswordError(data?.error || 'Email ou palavra-passe inválidos.')
+        return
+      }
 
-if (!response.ok || !data?.user) {
-  setPasswordError(data?.error || 'Email ou palavra-passe inválidos.')
-  return
-}
+      window.dispatchEvent(
+        new CustomEvent('rep-auth-changed', {
+          detail: data.user,
+        })
+      )
 
-console.log('Entrou com sucesso no frontend:', data.user)
-window.dispatchEvent(
-  new CustomEvent('rep-auth-changed', {
-    detail: data.user,
-  })
-)
-
-sessionStorage.setItem('rep-user', JSON.stringify(data.user))
-window.dispatchEvent(new Event('rep-auth-changed'))
-
-if (data.user.role === 'ADMIN') {
-  router.push('/admin')
-} else {
-  router.push('/main')
-}
-
-router.refresh()
-
+      if (data.user.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/main')
+      }
     } catch (error) {
       console.error('Erro no login:', error)
       setPasswordError('Erro de ligação. Tente novamente.')
@@ -164,12 +151,13 @@ router.refresh()
                 name="email"
                 type="email"
                 value={email}
+                disabled={loading}
                 onChange={(event) => {
                   setEmail(event.target.value)
                   setEmailError('')
                 }}
                 placeholder="exemplo@ipiaget.pt"
-                className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-4 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
+                className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-4 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10 disabled:opacity-70"
               />
             </div>
 
@@ -195,16 +183,18 @@ router.refresh()
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
+                disabled={loading}
                 onChange={(event) => {
                   setPassword(event.target.value)
                   setPasswordError('')
                 }}
                 placeholder="••••••••"
-                className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-11 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10"
+                className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-11 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10 disabled:opacity-70"
               />
 
               <button
                 type="button"
+                disabled={loading}
                 onPointerDown={(event) => {
                   event.preventDefault()
                   setShowPassword(true)
@@ -213,7 +203,7 @@ router.refresh()
                 onPointerLeave={() => setShowPassword(false)}
                 onPointerCancel={() => setShowPassword(false)}
                 onBlur={() => setShowPassword(false)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#87001f]"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#87001f] disabled:opacity-50"
                 aria-label="Manter premido para mostrar a palavra-passe"
               >
                 {showPassword ? icons.eyeOff : icons.eye}
@@ -232,8 +222,9 @@ router.refresh()
               <input
                 type="checkbox"
                 checked={rememberMe}
+                disabled={loading}
                 onChange={(event) => setRememberMe(event.target.checked)}
-                className="h-4 w-4 rounded border-[#dec7cf] text-[#87001f] focus:ring-[#87001f]"
+                className="h-4 w-4 rounded border-[#dec7cf] text-[#87001f] focus:ring-[#87001f] disabled:opacity-70"
               />
               Lembrar-me
             </label>
@@ -250,6 +241,13 @@ router.refresh()
           >
             {loading ? 'A entrar...' : 'Entrar'}
           </button>
+
+          {loading && (
+            <div className="flex items-center justify-center gap-2 text-xs font-medium text-[#87001f]">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#87001f]/30 border-t-[#87001f]" />
+              <span>A verificar credenciais...</span>
+            </div>
+          )}
         </form>
 
         <div className="my-9 h-px w-full bg-[#ebe5e8]" />
