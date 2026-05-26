@@ -4,18 +4,19 @@ import { useState } from 'react'
 import { Bot, PlusCircle } from 'lucide-react'
 import MaterialCard, { Material } from './MaterialCard'
 import SearchBar from './SearchBarDiscipline'
+import UploadModal from './UploadModal'
 
-// Interface de Tipagem
 interface MaterialsSectionProps {
   materials: Material[]
   disciplineName: string
+  disciplineId: string
 }
 
-export default function MaterialsSection({ materials, disciplineName }: MaterialsSectionProps) {
-  // Estados para Filtro, Pesquisa e Paginação
+export default function MaterialsSection({ materials, disciplineName, disciplineId }: MaterialsSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [visibleCount, setVisibleCount] = useState<number>(10)
+  const [modalOpen, setModalOpen] = useState(false)
 
   // Extração de Categorias Únicas para os Filtros
   const categories = ['all', ...Array.from(new Set(materials.map(m => m.category_name)))]
@@ -48,7 +49,10 @@ export default function MaterialsSection({ materials, disciplineName }: Material
           <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95">
             <Bot className="w-4 h-4" /> REP AI
           </button>
-          <button className="text-primary hover:text-primary-dark text-xs font-bold flex items-center gap-1.5 transition-colors group">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="text-primary hover:text-primary-dark text-xs font-bold flex items-center gap-1.5 transition-colors group"
+          >
             <PlusCircle className="w-4 h-4 transition-transform group-hover:scale-110" />
             Contribuir
           </button>
@@ -100,6 +104,13 @@ export default function MaterialsSection({ materials, disciplineName }: Material
         </button>
       )}
 
+      {modalOpen && (
+        <UploadModal
+          disciplineId={disciplineId}
+          disciplineName={disciplineName}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </section>
   )
 }
