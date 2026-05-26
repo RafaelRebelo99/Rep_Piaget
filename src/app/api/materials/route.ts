@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     const title = formData.get('title') as string
     const categoryId = formData.get('categoryId') as string
     const disciplineId = formData.get('disciplineId') as string
+    const fileSize = parseInt(formData.get('fileSize') as string) || 0
 
     if (!file || !title || !categoryId || !disciplineId) {
       return NextResponse.json({ error: 'Dados em falta.' }, { status: 400 })
@@ -51,7 +52,6 @@ export async function POST(req: Request) {
       file_path: filePath,
       file_type: ext.toUpperCase(),
       file_size: file.size,
-      status: 'PENDING',
     })
 
     if (dbError) {

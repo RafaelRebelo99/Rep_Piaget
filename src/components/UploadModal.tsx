@@ -60,6 +60,7 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
     formData.append('title', title)
     formData.append('categoryId', categoryId)
     formData.append('disciplineId', disciplineId)
+    formData.append('fileSize', String(file.size))
 
     const res = await fetch('/api/materials', { method: 'POST', body: formData })
     const json = await res.json()
@@ -91,7 +92,7 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
 
         {success ? (
           <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-            <CheckCircle className="w-12 h-12 text-green-500" />
+            <CheckCircle className="w-12 h-12 text-primary" />
             <p className="font-bold text-gray-800">Material submetido com sucesso!</p>
           </div>
         ) : (
