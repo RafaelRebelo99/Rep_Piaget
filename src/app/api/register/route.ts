@@ -1,16 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-
-const weakPasswords = [
-  '12345678',
-  'password',
-  'qwerty',
-  'qwerty123',
-  '123456789',
-  '11111111',
-  '00000000',
-  'abc12345',
-]
+import { weakPasswords } from '@/utils/passwordValidation'
 
 export async function POST(req: Request) {
   try {

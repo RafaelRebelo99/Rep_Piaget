@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
+import { weakPasswords } from '@/utils/passwordValidation'
 
 const icons = {
   eye: (
@@ -18,17 +19,6 @@ const icons = {
     </svg>
   ),
 }
-
-const weakPasswords = [
-  '12345678',
-  'password',
-  'qwerty',
-  'qwerty123',
-  '123456789',
-  '11111111',
-  '00000000',
-  'abc12345',
-]
 
 export default function RegisterPage() {
   const router = useRouter()
