@@ -96,14 +96,11 @@ export default function LoginForm() {
 
     let hasError = false
 
-    if (emailHasSpaces) {
-      setEmailError('O email não pode conter espaços.')
+    if (!normalEmail) {
+      setEmailError('Por favor, introduza o seu email.')
       hasError = true
-    } else if (
-      !normalEmail.endsWith('@ipiaget.pt') &&
-      !normalEmail.endsWith('@rep.pt')
-    ) {
-      setEmailError('Por favor, introduza o seu email institucional.')
+    } else if (emailHasSpaces) {
+      setEmailError('O email não pode conter espaços.')
       hasError = true
     } else {
       setEmailError('')
