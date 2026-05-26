@@ -124,10 +124,12 @@ create table public.audit_logs (
 create or replace view public.vw_materials_detailed as
 select 
     m.id as material_id,
+    m.discipline_id,
     m.title,
     m.description,
     m.file_path,
     m.file_type,
+    m.file_size,
     m.status,
     m.created_at,
     p.full_name as user_name,

@@ -15,7 +15,7 @@ type AuthUser = UserData | null
 
 const navLinks = [
   {
-    href: '/cursos',
+    href: '/',
     label: 'Cursos',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -129,7 +129,7 @@ export default function Navbar({
                 aria-current={isActive ? 'page' : undefined}
                 className={`text-sm transition-colors pb-1 border-b-2 ${
                   isActive
-                    ? 'text-primary border-[#8B1A1A]'
+                    ? 'text-primary border-primary'
                     : 'text-gray-600 border-transparent hover:text-primary'
                 }`}
               >
