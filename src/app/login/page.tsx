@@ -118,7 +118,7 @@ export default function LoginForm() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/entrar', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,6 +133,11 @@ export default function LoginForm() {
       const data = await response.json().catch(() => null)
 
       if (!response.ok || !data?.user) {
+        if (response.status === 403 && data?.error) {
+          setPasswordError(data.error)
+          return
+        }
+
         const nextAttempts = failedAttempts + 1
         setFailedAttempts(nextAttempts)
 
@@ -147,7 +152,7 @@ export default function LoginForm() {
         }
 
         setPasswordError(
-          `Email ou palavra-passe inválidos. Restam ${3 - nextAttempts} tentativa(s).`
+          data?.error || `Email ou palavra-passe inválidos. Restam ${3 - nextAttempts} tentativa(s).`
         )
         return
       }
@@ -286,7 +291,7 @@ export default function LoginForm() {
               Lembrar-me
             </label>
 
-            <Link href="/recuperar-password" className="font-semibold text-[#87001f] hover:underline">
+            <Link href="/reset-password" className="font-semibold text-[#87001f] hover:underline">
               Esqueceu a palavra-passe?
             </Link>
           </div>
@@ -311,7 +316,7 @@ export default function LoginForm() {
 
         <p className="text-center text-xs text-[#6f5b64]">
           Não tem conta?{' '}
-          <Link href="/registar" className="font-bold text-[#87001f] hover:underline">
+          <Link href="/register" className="font-bold text-[#87001f] hover:underline">
             Registar
           </Link>
         </p>

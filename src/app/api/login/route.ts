@@ -9,10 +9,7 @@ export async function POST(req: Request) {
     const normalEmail = String(email || '').trim().toLowerCase()
     const normalPassword = String(password || '')
 
-    if (
-      !normalEmail.endsWith('@ipiaget.pt') &&
-      !normalEmail.endsWith('@rep.pt')
-    ) {
+    if (!normalEmail) {
       return NextResponse.json(
         { error: 'Por favor, introduza o seu email institucional.' },
         { status: 400 }
@@ -56,9 +53,28 @@ export async function POST(req: Request) {
       password: normalPassword,
     })
 
-    if (error || !data.user) {
+    if (error) {
+      const message = error.message.toLowerCase()
+
+      if (
+        message.includes('email not confirmed') ||
+        message.includes('not confirmed')
+      ) {
+        return NextResponse.json(
+          { error: 'Confirme o seu email antes de iniciar sessão.' },
+          { status: 403 }
+        )
+      }
+
       return NextResponse.json(
-        { error: 'Email ou palavra-passe inválidos.' },
+        { error: 'Email ou palavra-passe invalidos.' },
+        { status: 401 }
+      )
+    }
+
+    if (!data.user) {
+      return NextResponse.json(
+        { error: 'Email ou palavra-passe invalidos.' },
         { status: 401 }
       )
     }

@@ -175,11 +175,11 @@ export default function Navbar({
             </>
           ) : (
             <>
-              <Link href="/entrar" className="text-sm text-gray-600 hover:text-primary transition-colors">
+              <Link href="/login" className="text-sm text-gray-600 hover:text-primary transition-colors">
                 Entrar
               </Link>
               <Link
-                href="/registar"
+                href="/register"
                 className="text-sm text-white bg-primary px-4 py-2 rounded hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 Registar
