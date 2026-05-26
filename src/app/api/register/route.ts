@@ -23,6 +23,13 @@ export async function POST(req: Request) {
       )
     }
 
+    if (!normalEmail) {
+      return NextResponse.json(
+        { error: 'Por favor, introduza o seu email.' },
+        { status: 400 }
+      )
+    }
+
     if (emailHasSpaces) {
       return NextResponse.json(
         { error: 'O email não pode conter espaços.' },
