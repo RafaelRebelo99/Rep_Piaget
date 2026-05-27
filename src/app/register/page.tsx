@@ -103,7 +103,7 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/registar', {
+      const res = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ export default function RegisterPage() {
   return
 }
 
-      router.push('/entrar')
+      router.push('/login')
     } catch {
       setPasswordError('Erro de ligação. Tente novamente.')
     } finally {

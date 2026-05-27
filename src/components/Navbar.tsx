@@ -37,7 +37,7 @@ const navLinks = [
 
 const authLinks = [
   {
-    href: '/entrar',
+    href: '/login',
     label: 'Entrar',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -46,7 +46,7 @@ const authLinks = [
     ),
   },
   {
-    href: '/registar',
+    href: '/register',
     label: 'Registar',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -106,7 +106,7 @@ export default function Navbar({
 
     setUser(null)
     setMenuOpen(false)
-    router.push('/entrar')
+    router.push('/login')
   }
 
   const mobileLinks = user ? navLinks : [...navLinks, ...authLinks]
