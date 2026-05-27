@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { weakPasswords } from '@/utils/passwordValidation'
+import {
+  validatePassword,
+  validatePasswordConfirmation,
+} from '@/utils/passwordValidation'
 
 export async function POST(req: Request) {
   try {
@@ -12,8 +15,6 @@ export async function POST(req: Request) {
     const normalPassword = String(password || '').trim()
     const normalConfirmPassword = String(confirmPassword || '').trim()
 
-    const passwordLower = normalPassword.toLowerCase()
-    const emailUsername = normalEmail.split('@')[0]
     const emailHasSpaces = /\s/.test(rawEmail)
 
     if (!normalName) {
@@ -47,51 +48,26 @@ export async function POST(req: Request) {
       )
     }
 
-    if (!normalPassword) {
+    const passwordValidationError = validatePassword({
+      password: normalPassword,
+      email: normalEmail,
+    })
+
+    if (passwordValidationError) {
       return NextResponse.json(
-        { error: 'Por favor, introduza uma palavra-passe.' },
+        { error: passwordValidationError },
         { status: 400 }
       )
     }
 
-    if (normalPassword.length < 8) {
-      return NextResponse.json(
-        { error: 'A palavra-passe deve ter no mínimo 8 caracteres.' },
-        { status: 400 }
-      )
-    }
+    const confirmPasswordValidationError = validatePasswordConfirmation({
+      password: normalPassword,
+      confirmPassword: normalConfirmPassword,
+    })
 
-    if (weakPasswords.includes(passwordLower)) {
+    if (confirmPasswordValidationError) {
       return NextResponse.json(
-        { error: 'A palavra-passe é muito fraca.' },
-        { status: 400 }
-      )
-    }
-
-    if (emailUsername && passwordLower.includes(emailUsername)) {
-      return NextResponse.json(
-        { error: 'A palavra-passe não deve conter o nome do email.' },
-        { status: 400 }
-      )
-    }
-
-    if (normalEmail && passwordLower.includes(normalEmail)) {
-      return NextResponse.json(
-        { error: 'A palavra-passe não deve conter o email.' },
-        { status: 400 }
-      )
-    }
-
-    if (!normalConfirmPassword) {
-      return NextResponse.json(
-        { error: 'Por favor, confirme a palavra-passe.' },
-        { status: 400 }
-      )
-    }
-
-    if (normalPassword !== normalConfirmPassword) {
-      return NextResponse.json(
-        { error: 'As palavras-passe não coincidem.' },
+        { error: confirmPasswordValidationError },
         { status: 400 }
       )
     }

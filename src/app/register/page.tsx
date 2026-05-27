@@ -3,7 +3,10 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
-import { weakPasswords } from '@/utils/passwordValidation'
+import {
+  validatePassword,
+  validatePasswordConfirmation,
+} from '@/utils/passwordValidation'
 
 const icons = {
   eye: (
@@ -42,10 +45,7 @@ export default function RegisterPage() {
 
     const normalName = name.trim()
     const normalEmail = email.trim().toLowerCase()
-    const normalPassword = password.trim()
-    const passwordLower = normalPassword.toLowerCase()
     const emailHasSpaces = /\s/.test(email)
-    const emailUsername = normalEmail.split('@')[0]
 
     let hasError = false
 
@@ -69,33 +69,26 @@ export default function RegisterPage() {
   setEmailError('')
 }
 
-    if (!normalPassword) {
-      setPasswordError('Por favor, introduza uma palavra-passe.')
+    const passwordValidationError = validatePassword({
+      password,
+      email: normalEmail,
+    })
+
+    setPasswordError(passwordValidationError)
+
+    if (passwordValidationError) {
       hasError = true
-    } else if (normalPassword.length < 8) {
-      setPasswordError('A palavra-passe deve ter no mínimo 8 caracteres.')
-      hasError = true
-    } else if (weakPasswords.includes(passwordLower)) {
-      setPasswordError('A palavra-passe é muito fraca.')
-      hasError = true
-    } else if (emailUsername && passwordLower.includes(emailUsername)) {
-      setPasswordError('A palavra-passe não deve conter o nome do email.')
-      hasError = true
-    } else if (normalEmail && passwordLower.includes(normalEmail)) {
-      setPasswordError('A palavra-passe não deve conter o email.')
-      hasError = true
-    } else {
-      setPasswordError('')
     }
 
-    if (!confirmPassword) {
-      setConfirmPasswordError('Por favor, confirme a palavra-passe.')
+    const confirmPasswordValidationError = validatePasswordConfirmation({
+      password,
+      confirmPassword,
+    })
+
+    setConfirmPasswordError(confirmPasswordValidationError)
+
+    if (confirmPasswordValidationError) {
       hasError = true
-    } else if (password !== confirmPassword) {
-      setConfirmPasswordError('As palavras-passe não coincidem.')
-      hasError = true
-    } else {
-      setConfirmPasswordError('')
     }
 
     if (hasError) return
