@@ -84,28 +84,6 @@ export async function POST(req: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    const { data: existingProfile, error: existingProfileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', normalEmail)
-      .maybeSingle()
-
-    if (existingProfileError) {
-      console.error('Erro ao verificar perfil existente:', existingProfileError)
-
-      return NextResponse.json(
-        { error: 'Não foi possível validar o email. Tente novamente.' },
-        { status: 500 }
-      )
-    }
-
-    if (existingProfile) {
-      return NextResponse.json(
-        { error: 'Tentou registar com um email existente.' },
-        { status: 409 }
-      )
-    }
-
     const { data, error } = await supabase.auth.signUp({
       email: normalEmail,
       password: normalPassword,
