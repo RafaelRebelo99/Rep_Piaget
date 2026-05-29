@@ -98,15 +98,11 @@ export async function POST(req: Request) {
     if (error) {
       console.error('Erro ao criar conta:', error)
 
-      const message = error.message.toLowerCase()
+      const errStatus = error.status
 
-      if (
-        message.includes('already registered') ||
-        message.includes('already exists') ||
-        message.includes('user already registered')
-      ) {
+      if (errStatus === 409) {
         return NextResponse.json(
-          { error: 'Tentou registar com um email existente.' },
+          { error: 'Conflito ao criar a conta.' },
           { status: 409 }
         )
       }
