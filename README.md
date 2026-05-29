@@ -52,7 +52,7 @@ Para que a aplicação consiga comunicar com a base de dados e com a autenticaç
 4. Abre o ficheiro `.env.local` e preenche os respetivos valores:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=https://teu-id-de-projeto.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=tua-chave-anon-public...
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=tua-chave-anon-public...
    ```
 - (Resend API)
 
