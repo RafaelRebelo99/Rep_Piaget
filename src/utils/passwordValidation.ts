@@ -24,6 +24,7 @@ export function validatePassword({ password, email }: ValidatePasswordParams) {
   const normalEmail = email.trim().toLowerCase()
   const passwordLower = normalPassword.toLowerCase()
   const emailUsername = normalEmail.split('@')[0]
+  const emailUsernameIsNumeric = /^\d+$/.test(emailUsername)
 
   if (!normalPassword) {
     return 'Por favor, introduza uma palavra-passe.'
@@ -37,8 +38,8 @@ export function validatePassword({ password, email }: ValidatePasswordParams) {
     return 'A palavra-passe é muito fraca.'
   }
 
-  if (emailUsername && passwordLower.includes(emailUsername)) {
-    return 'A palavra-passe não deve conter o nome do email.'
+  if (emailUsernameIsNumeric && passwordLower.includes(emailUsername)) {
+    return 'A palavra-passe não deve conter o número do email.'
   }
 
   if (normalEmail && passwordLower.includes(normalEmail)) {
