@@ -34,3 +34,11 @@ body {
 button  {
   cursor: pointer;
 }
+
+
+
+/* Remove o ícone nativo de mostrar password no Edge/Internet Explorer */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
