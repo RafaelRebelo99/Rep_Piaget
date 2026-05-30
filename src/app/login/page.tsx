@@ -1,0 +1,326 @@
+'use client'
+
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { FormEvent, useEffect, useState } from 'react'
+
+const icons = {
+  graduation: (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.42A12 12 0 0119 17.5c-2.1.32-4.07 1.14-5.82 2.36a2 2 0 01-2.36 0A12 12 0 005 17.5a12 12 0 01.84-6.92L12 14z" />
+    </svg>
+  ),
+  email: (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+  lock: (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0v4" />
+    </svg>
+  ),
+  eye: (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  ),
+  eyeOff: (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.5-7a9.951 9.951 0 011.667-4.826M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7.586 7.586l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 01-1.414 1.414z" />
+    </svg>
+  ),
+}
+
+export default function LoginForm() {
+  const router = useRouter()
+
+  const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState('')
+
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+
+  const [rememberMe, setRememberMe] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const [failedAttempts, setFailedAttempts] = useState(0)
+  const [blockedUntil, setBlockedUntil] = useState<number | null>(null)
+  const [remainingSeconds, setRemainingSeconds] = useState(0)
+
+  const normalEmail = email.trim().toLowerCase()
+  const emailHasSpaces = /\s/.test(email)
+  const normalPassword = password.trim()
+
+  const isBlocked = blockedUntil !== null
+
+  useEffect(() => {
+    if (blockedUntil === null) return
+
+    const currentBlockedUntil = blockedUntil
+
+    function updateRemainingTime() {
+      const remaining = Math.ceil((currentBlockedUntil - Date.now()) / 1000)
+
+      if (remaining <= 0) {
+        setBlockedUntil(null)
+        setFailedAttempts(0)
+        setRemainingSeconds(0)
+        setPasswordError('')
+        return
+      }
+
+      setRemainingSeconds(remaining)
+    }
+
+    updateRemainingTime()
+
+    const interval = window.setInterval(updateRemainingTime, 1000)
+
+    return () => window.clearInterval(interval)
+  }, [blockedUntil])
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (isBlocked) {
+      setPasswordError('Tentativas excedidas, aguarde 30 segundos até poder tentar novamente.')
+      return
+    }
+
+    let hasError = false
+
+    if (!normalEmail) {
+      setEmailError('Por favor, introduza o seu email.')
+      hasError = true
+    } else if (emailHasSpaces) {
+      setEmailError('O email não pode conter espaços.')
+      hasError = true
+    } else {
+      setEmailError('')
+    }
+
+    if (!normalPassword) {
+      setPasswordError('Por favor, introduza a sua palavra-passe.')
+      hasError = true
+    } else {
+      setPasswordError('')
+    }
+
+    if (hasError) return
+
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: normalEmail,
+          password,
+          rememberMe,
+        }),
+      })
+
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok || !data?.user) {
+        if (response.status === 403 && data?.error) {
+          setPasswordError(data.error)
+          return
+        }
+
+        const nextAttempts = failedAttempts + 1
+        setFailedAttempts(nextAttempts)
+
+        if (nextAttempts >= 3) {
+          const lockTimeMs = 30 * 1000
+          const until = Date.now() + lockTimeMs
+
+          setBlockedUntil(until)
+          setRemainingSeconds(30)
+          setPasswordError('Tentativas excedidas, aguarde 30 segundos até poder tentar novamente.')
+          return
+        }
+
+        setPasswordError(
+          data?.error || `Email ou palavra-passe inválidos. Restam ${3 - nextAttempts} tentativa(s).`
+        )
+        return
+      }
+
+      setFailedAttempts(0)
+      setBlockedUntil(null)
+      setRemainingSeconds(0)
+
+      window.dispatchEvent(
+        new CustomEvent('rep-auth-changed', {
+          detail: data.user,
+        })
+      )
+
+      if (data.user.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/main')
+      }
+    } catch (error) {
+      console.error('Erro no login:', error)
+      setPasswordError('Erro de ligação. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <main className="min-h-[calc(100vh-104px)] bg-[#f4f5f7] flex items-center justify-center px-4 py-4 md:py-5">
+      <section className="w-full max-w-[405px] rounded-lg bg-white px-9 py-9 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f3e6ea] text-[#87001f]">
+            {icons.graduation}
+          </div>
+
+          <h1 className="text-[26px] font-bold leading-tight text-[#071426]">
+            Bem-vindo ao REP
+          </h1>
+
+          <p className="mt-2 text-sm text-[#8b7480]">
+            Aceda ao repositório académico
+          </p>
+        </div>
+
+        <form noValidate onSubmit={handleSubmit} className="mt-9 space-y-6">
+          <div>
+            <label htmlFor="email" className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-[#3c2530]">
+              Email
+            </label>
+
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aaa5aa]">
+                {icons.email}
+              </span>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={email}
+                disabled={loading || isBlocked}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  setEmailError('')
+                }}
+                placeholder="exemplo@ipiaget.pt"
+                className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-4 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10 disabled:opacity-70"
+              />
+            </div>
+
+            {emailError && (
+              <p className="mt-2 text-xs font-medium text-[#87001f]">
+                {emailError}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="password" className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-[#3c2530]">
+              Palavra-passe
+            </label>
+
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#aaa5aa]">
+                {icons.lock}
+              </span>
+
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                disabled={loading || isBlocked}
+                onChange={(event) => {
+                  setPassword(event.target.value)
+                  setPasswordError('')
+                }}
+                placeholder="••••••••"
+                className="h-11 w-full rounded-md border border-transparent bg-[#f1f1f3] pl-11 pr-11 text-sm text-[#1f2937] outline-none transition placeholder:text-[#b5b1b6] focus:border-[#87001f]/30 focus:ring-4 focus:ring-[#87001f]/10 disabled:opacity-70"
+              />
+
+              <button
+                type="button"
+                disabled={loading || isBlocked}
+                onPointerDown={(event) => {
+                  event.preventDefault()
+                  setShowPassword(true)
+                }}
+                onPointerUp={() => setShowPassword(false)}
+                onPointerLeave={() => setShowPassword(false)}
+                onPointerCancel={() => setShowPassword(false)}
+                onBlur={() => setShowPassword(false)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#87001f] disabled:opacity-50"
+                aria-label="Manter premido para mostrar a palavra-passe"
+              >
+                {showPassword ? icons.eyeOff : icons.eye}
+              </button>
+            </div>
+
+            {passwordError && (
+              <p className="mt-2 text-xs font-medium text-[#87001f]">
+                {passwordError}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between text-xs">
+            <label className="flex items-center gap-2 text-[#6f5b64]">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                disabled={loading || isBlocked}
+                onChange={(event) => setRememberMe(event.target.checked)}
+                className="h-4 w-4 rounded border-[#dec7cf] text-[#87001f] focus:ring-[#87001f] disabled:opacity-70"
+              />
+              Lembrar-me
+            </label>
+
+            <Link href="/reset-password" className="font-semibold text-[#87001f] hover:underline">
+              Esqueceu a palavra-passe?
+            </Link>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || isBlocked}
+            className="h-12 w-full rounded-md bg-[#87001f] text-sm font-bold text-white shadow-[0_8px_16px_rgba(135,0,31,0.25)] transition hover:bg-[#74001b] focus:outline-none focus:ring-2 focus:ring-[#87001f] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {loading ? 'A entrar...' : isBlocked ? `Aguarde ${remainingSeconds}s` : 'Entrar'}
+          </button>
+
+          {loading && (
+            <div className="flex items-center justify-center gap-2 text-xs font-medium text-[#87001f]">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#87001f]/30 border-t-[#87001f]" />
+              <span>A verificar credenciais...</span>
+            </div>
+          )}
+        </form>
+
+        <div className="my-9 h-px w-full bg-[#ebe5e8]" />
+
+        <p className="text-center text-xs text-[#6f5b64]">
+          Não tem conta?{' '}
+          <Link href="/register" className="font-bold text-[#87001f] hover:underline">
+            Registar
+          </Link>
+        </p>
+      </section>
+    </main>
+  )
+}
