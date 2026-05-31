@@ -8,10 +8,10 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient()
 
-    // const { data: { user } } = await supabase.auth.getUser()
-    // if (!user) {
-    //   return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
-    // }
+     const { data: { user } } = await supabase.auth.getUser()
+     if (!user) {
+       return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
+     }
 
     const formData = await req.formData()
     const file = formData.get('file') as File
@@ -46,12 +46,12 @@ export async function POST(req: Request) {
 
     const { error: dbError } = await supabase.from('materials').insert({
       discipline_id: disciplineId,
-      user_id: '37587d5f-a109-4d98-8915-bc3877f0896e', // Substituir pelo ID do utilizador autenticado
+      user_id: user.id,
       category_id: categoryId,
       title: title.trim(),
       file_path: filePath,
       file_type: ext.toUpperCase(),
-      file_size: file.size,
+      file_size: fileSize,
     })
 
     if (dbError) {
