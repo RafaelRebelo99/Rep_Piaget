@@ -16,15 +16,12 @@ interface MaterialsSectionProps {
   materials: ExtendedMaterial[]
   disciplineName: string
   disciplineId: string
-  disciplineId: string
 }
 
-export default function MaterialsSection({ materials, disciplineName, disciplineId }: MaterialsSectionProps) {
 export default function MaterialsSection({ materials, disciplineName, disciplineId }: MaterialsSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [visibleCount, setVisibleCount] = useState<number>(10)
-  const [modalOpen, setModalOpen] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
   // Extração de Categorias Únicas para os Filtros
@@ -59,10 +56,6 @@ export default function MaterialsSection({ materials, disciplineName, discipline
           <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95">
             <Bot className="w-4 h-4" /> REP AI
           </button>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="text-primary hover:text-primary-dark text-xs font-bold flex items-center gap-1.5 transition-colors group"
-          >
           <button
             onClick={() => setModalOpen(true)}
             className="text-primary hover:text-primary-dark text-xs font-bold flex items-center gap-1.5 transition-colors group"
@@ -118,13 +111,6 @@ export default function MaterialsSection({ materials, disciplineName, discipline
         </button>
       )}
 
-      {modalOpen && (
-        <UploadModal
-          disciplineId={disciplineId}
-          disciplineName={disciplineName}
-          onClose={() => setModalOpen(false)}
-        />
-      )}
       {modalOpen && (
         <UploadModal
           disciplineId={disciplineId}
