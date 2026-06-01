@@ -71,7 +71,7 @@ export default async function UnidadeCurricularPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
           {/* Zona Central: Lista de Materiais com Pesquisa e Filtros */}
-          <MaterialsSection materials={materials ?? []} disciplineName={details.discipline_name} />
+          <MaterialsSection materials={materials ?? []} disciplineName={details.discipline_name} disciplineId={disciplineId} />
 
           {/* Barra Lateral: Lista de Feedbacks e Comentários */}
           <aside className="lg:col-span-5">

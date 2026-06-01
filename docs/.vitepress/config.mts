@@ -21,13 +21,16 @@ export default defineConfig({
           { text: 'Página Inicial', link: '/' },
           { text: 'Etapas de Desenvolvimento', link: '/etapas_desenvolvimento' },
           { text: 'Requisitos do Sistema', link: '/requisitos' },
+          { text: 'Setup e Instalação', link: '/setup' },
         ]
       },
       {
         text: 'Arquitetura Técnica',
         items: [
           { text: 'Base de Dados', link: '/base_dados' },
+          { text: 'Autenticação', link: '/autenticacao' },
           { text: 'Integração de Email', link: '/resend' },
+          { text: 'Sistema de Votação', link: '/votacao' },
         ]
       }
     ],

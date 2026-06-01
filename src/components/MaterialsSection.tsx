@@ -4,24 +4,32 @@ import { useState } from 'react'
 import { Bot, PlusCircle } from 'lucide-react'
 import MaterialCard, { Material } from './MaterialCard'
 import SearchBar from './SearchBarDiscipline'
+import UploadModal from './UploadModal'
 
-// Interface de Tipagem
-interface MaterialsSectionProps {
-  materials: Material[]
-  disciplineName: string
+// Incluir o status de forma opcional e segura
+interface ExtendedMaterial extends Material {
+  status?: 'VISIBLE' | 'HIDDEN' | string
 }
 
-export default function MaterialsSection({ materials, disciplineName }: MaterialsSectionProps) {
-  // Estados para Filtro, Pesquisa e Paginação
+// Interface
+interface MaterialsSectionProps {
+  materials: ExtendedMaterial[]
+  disciplineName: string
+  disciplineId: string
+}
+
+export default function MaterialsSection({ materials, disciplineName, disciplineId }: MaterialsSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [visibleCount, setVisibleCount] = useState<number>(10)
+  const [modalOpen, setModalOpen] = useState(false)
 
   // Extração de Categorias Únicas para os Filtros
   const categories = ['all', ...Array.from(new Set(materials.map(m => m.category_name)))]
 
-  // Lógica de Filtragem (Categoria + Termo de Pesquisa)
   const filteredMaterials = materials.filter((mat) => {
+    if (mat.status === 'HIDDEN') return false
+
     const matchesCategory = selectedCategory === 'all' || mat.category_name === selectedCategory
     const matchesSearch = mat.title.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
@@ -48,7 +56,10 @@ export default function MaterialsSection({ materials, disciplineName }: Material
           <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95">
             <Bot className="w-4 h-4" /> REP AI
           </button>
-          <button className="text-primary hover:text-primary-dark text-xs font-bold flex items-center gap-1.5 transition-colors group">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="text-primary hover:text-primary-dark text-xs font-bold flex items-center gap-1.5 transition-colors group"
+          >
             <PlusCircle className="w-4 h-4 transition-transform group-hover:scale-110" />
             Contribuir
           </button>
@@ -95,11 +106,18 @@ export default function MaterialsSection({ materials, disciplineName }: Material
         <button
           onClick={() => setVisibleCount((prev) => prev + 10)}
           className="w-full mt-8 py-3 bg-gray-100 text-primary rounded-xl text-xs font-bold hover:bg-gray-100 hover:text-gray-700 transition-all border border-transparent hover:border-gray-200"
-          >
+        >
           Carregar mais materiais
         </button>
       )}
 
+      {modalOpen && (
+        <UploadModal
+          disciplineId={disciplineId}
+          disciplineName={disciplineName}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </section>
   )
 }

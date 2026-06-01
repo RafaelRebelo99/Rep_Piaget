@@ -170,7 +170,7 @@ export default function LoginForm() {
       if (data.user.role === 'ADMIN') {
         router.push('/admin')
       } else {
-        router.push('/main')
+        router.push('/')
       }
     } catch (error) {
       console.error('Erro no login:', error)
