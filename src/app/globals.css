@@ -33,9 +33,35 @@ body {
 
 button  {
   cursor: pointer;
+  user-select: none;
 }
 
+/* Evitar a seleção de texto padrão da interface (como placeholders e labels) */
+label,
+::placeholder {
+  user-select: none;
+}
 
+/* Scroll suave para links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Cor de seleção de texto personalizada para combinar com site */
+::selection {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* Remover o destaque azul padrão ao tocar em dispositivos móveis */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Evitar que as imagens sejam arrastadas */
+img {
+  -webkit-user-drag: none;
+}
 
 /* Remove o ícone nativo de mostrar password no Edge/Internet Explorer */
 input[type="password"]::-ms-reveal,
