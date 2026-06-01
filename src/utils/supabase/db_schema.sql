@@ -52,6 +52,7 @@ create table public.course_disciplines (
 
 ------------------------------------------------------------
 -- 5. TABELA: materials
+-- Descrição: Repositório de ficheiros com suporte a moderação automática
 ------------------------------------------------------------
 create table public.materials (
   id uuid default gen_random_uuid() primary key,
@@ -62,7 +63,8 @@ create table public.materials (
   description text,
   file_path text not null, -- Ex: [ID_DISCIPLINA]/[TIMESTAMP]-nome.pdf
   file_type text not null, -- Ex: PDF, DOCX, ZIP
-  status text check (status in ('PENDING', 'APPROVED', 'REJECTED')) default 'PENDING',
+  file_size int8,
+  status text default 'VISIBLE' check (status in ('VISIBLE', 'HIDDEN')),
   created_at timestamptz default now()
 );
 
@@ -119,7 +121,33 @@ create table public.audit_logs (
 );
 
 ------------------------------------------------------------
--- 8. VIEW DETALHADA 
+-- VIEW: vw_materials_detailed
+-- Descrição: Consolida dados do material com metadados e score em tempo real
+------------------------------------------------------------
+create or replace view public.vw_materials_detailed as
+select 
+  m.id as material_id,
+  m.discipline_id,
+  m.title,
+  m.description,
+  m.file_path,
+  m.file_type,
+  m.file_size,
+  m.status, -- TEXT ('VISIBLE' ou 'HIDDEN')
+  m.created_at,
+  p.full_name as user_name,
+  d.name as discipline_name,
+  c.name as category_name,
+  coalesce((select sum(v.value) from public.votes v where v.material_id = m.id), 0) as score
+from 
+  public.materials m
+left join public.profiles p on m.user_id = p.id
+left join public.disciplines d on m.discipline_id = d.id
+left join public.material_categories c on m.category_id = c.id;
+
+------------------------------------------------------------
+-- VIEW DETALHADA 
+-- Descrição: Consolida dados do material com a soma real de scores
 ------------------------------------------------------------
 create or replace view public.vw_materials_detailed as
 select 
@@ -135,7 +163,7 @@ select
     p.full_name as user_name,
     d.name as discipline_name,
     c.name as category_name,
-    (select coalesce(sum(value), 0) from public.votes v where v.material_id = m.id) as score
+    coalesce((select sum(v.value) from public.votes v where v.material_id = m.id), 0) as score
 from 
     public.materials m
 left join public.profiles p on m.user_id = p.id
@@ -170,6 +198,49 @@ $$;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function handle_new_user();
+
+------------------------------------------------------------
+-- FUNÇÃO: check_material_score_and_hide()
+-- Calcula o score e altera reativamente o status do material
+------------------------------------------------------------
+create or replace function public.check_material_score_and_hide()
+returns trigger as $$
+declare
+  current_score int;
+  target_material_id uuid;
+begin
+  if (TG_OP = 'DELETE') then
+    target_material_id := OLD.material_id;
+  else
+    target_material_id := NEW.material_id;
+  end if;
+
+  select coalesce(sum(value), 0) into current_score
+  from public.votes
+  where material_id = target_material_id;
+
+  if current_score <= -5 then
+    update public.materials
+    set status = 'HIDDEN'
+    where id = target_material_id;
+  else
+    update public.materials
+    set status = 'VISIBLE'
+    where id = target_material_id;
+  end if;
+
+  return null;
+end;
+$$ language plpgsql security definer;
+
+------------------------------------------------------------
+-- TRIGGER: trigger_on_vote_change
+-- Executa a função após INSERT, UPDATE ou DELETE em public.votes
+------------------------------------------------------------
+create trigger trigger_on_vote_change
+  after insert or update or delete
+  on public.votes
+  for each row execute function public.check_material_score_and_hide();
 
 ------------------------------------------------------------
 -- Ativação do RLS para todas as tabelas do esquema public

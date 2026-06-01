@@ -6,8 +6,14 @@ import MaterialCard, { Material } from './MaterialCard'
 import SearchBar from './SearchBarDiscipline'
 import UploadModal from './UploadModal'
 
+// Incluir o status de forma opcional e segura
+interface ExtendedMaterial extends Material {
+  status?: 'VISIBLE' | 'HIDDEN' | string
+}
+
+// Interface
 interface MaterialsSectionProps {
-  materials: Material[]
+  materials: ExtendedMaterial[]
   disciplineName: string
   disciplineId: string
 }
@@ -21,8 +27,9 @@ export default function MaterialsSection({ materials, disciplineName, discipline
   // Extração de Categorias Únicas para os Filtros
   const categories = ['all', ...Array.from(new Set(materials.map(m => m.category_name)))]
 
-  // Lógica de Filtragem (Categoria + Termo de Pesquisa)
   const filteredMaterials = materials.filter((mat) => {
+    if (mat.status === 'HIDDEN') return false
+
     const matchesCategory = selectedCategory === 'all' || mat.category_name === selectedCategory
     const matchesSearch = mat.title.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
@@ -99,7 +106,7 @@ export default function MaterialsSection({ materials, disciplineName, discipline
         <button
           onClick={() => setVisibleCount((prev) => prev + 10)}
           className="w-full mt-8 py-3 bg-gray-100 text-primary rounded-xl text-xs font-bold hover:bg-gray-100 hover:text-gray-700 transition-all border border-transparent hover:border-gray-200"
-          >
+        >
           Carregar mais materiais
         </button>
       )}
