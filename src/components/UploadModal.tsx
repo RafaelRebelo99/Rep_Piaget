@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { X, CloudUpload, CheckCircle } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { MAX_SIZE_BYTES } from '@/utils/uploadConfig'
+import { formatBytes } from '@/utils/formatter'
 
 interface Category {
   id: string
@@ -46,7 +47,7 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
 
   function validateAndSetFile(f: File) {
     if (f.size > MAX_SIZE_BYTES) {
-      setError(`O ficheiro excede o limite de ${MAX_SIZE_BYTES / 1024 / 1024}MB.`)
+      setError(`O ficheiro excede o limite de ${formatBytes(MAX_SIZE_BYTES)}.`)
       return
     }
     setError('')
@@ -160,7 +161,7 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
             ) : (
               <>
                 <p className="text-sm text-gray-500">Arraste ficheiros ou clique para carregar</p>
-                <p className="text-xs text-gray-400">Tamanho máximo {MAX_SIZE_BYTES / 1024 / 1024}MB</p>
+                <p className="text-xs text-gray-400">Tamanho máximo {formatBytes(MAX_SIZE_BYTES)}</p>
               </>
             )}
             <input
