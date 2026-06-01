@@ -3,7 +3,6 @@ import {
   FileText,
   Download,
   ThumbsUp,
-  Image as ImageIcon,
   FileSpreadsheet,
   Presentation,
   FileCode,
@@ -30,9 +29,8 @@ const fileTypeConfig: Record<string, { icon: LucideIcon, color: string, bg: stri
   doc: { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
   pptx: { icon: Presentation, color: 'text-orange-600', bg: 'bg-orange-50' },
   xlsx: { icon: FileSpreadsheet, color: 'text-green-600', bg: 'bg-green-50' },
-  jpg: { icon: ImageIcon, color: 'text-purple-600', bg: 'bg-purple-50' },
-  png: { icon: ImageIcon, color: 'text-purple-600', bg: 'bg-purple-50' },
-  zip: { icon: FileCode, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+  md: { icon: FileCode, color: 'text-gray-600', bg: 'bg-gray-50' },
+  txt: { icon: FileText, color: 'text-gray-500', bg: 'bg-gray-50' },
   default: { icon: File, color: 'text-gray-600', bg: 'bg-gray-50' }
 }
 

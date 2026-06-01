@@ -1,8 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
-
-const MAX_SIZE_BYTES = 10 * 1024 * 1024 // 10MB
-const ALLOWED_TYPES = ['pdf', 'docx', 'doc', 'pptx', 'xlsx']
+import { MAX_SIZE_BYTES, ALLOWED_TYPES, ALLOWED_MIME_TYPES } from '@/utils/uploadConfig'
 
 export async function POST(req: Request) {
   try {
@@ -20,7 +18,7 @@ export async function POST(req: Request) {
     const disciplineId = formData.get('disciplineId') as string
     const fileSize = parseInt(formData.get('fileSize') as string) || 0
 
-    if (!file || !title || !categoryId || !disciplineId) {
+    if (!file || !title.trim() || !categoryId || !disciplineId) {
       return NextResponse.json({ error: 'Dados em falta.' }, { status: 400 })
     }
 
@@ -33,7 +31,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Tipo de ficheiro não permitido.' }, { status: 400 })
     }
 
-    const filePath = `${disciplineId}/${Date.now()}-${file.name}`
+    if (ALLOWED_MIME_TYPES[ext] && file.type !== ALLOWED_MIME_TYPES[ext]) {
+      return NextResponse.json({ error: 'Tipo de ficheiro não permitido.' }, { status: 400 })
+    }
+
+    const safeName = file.name
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '-')
+      .toLowerCase()
+
+    const filePath = `${disciplineId}/${Date.now()}-${safeName}`
 
     const { error: storageError } = await supabase.storage
       .from('materials')

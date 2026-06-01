@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, CloudUpload, CheckCircle } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
+import { MAX_SIZE_BYTES } from '@/utils/uploadConfig'
 
 interface Category {
   id: string
@@ -27,6 +28,13 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -36,16 +44,25 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
     })
   }, [])
 
+  function validateAndSetFile(f: File) {
+    if (f.size > MAX_SIZE_BYTES) {
+      setError(`O ficheiro excede o limite de ${MAX_SIZE_BYTES / 1024 / 1024}MB.`)
+      return
+    }
+    setError('')
+    setFile(f)
+  }
+
   function handleDrop(e: React.DragEvent) {
     e.preventDefault()
     setDragging(false)
     const dropped = e.dataTransfer.files[0]
-    if (dropped) setFile(dropped)
+    if (dropped) validateAndSetFile(dropped)
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = e.target.files?.[0]
-    if (selected) setFile(selected)
+    if (selected) validateAndSetFile(selected)
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -74,7 +91,7 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
 
     router.refresh()
     setSuccess(true)
-    setTimeout(onClose, 2000)
+    timerRef.current = setTimeout(onClose, 2000)
   }
 
   return (
@@ -143,13 +160,13 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
             ) : (
               <>
                 <p className="text-sm text-gray-500">Arraste ficheiros ou clique para carregar</p>
-                <p className="text-xs text-gray-400">PDF, DOCX até 10MB</p>
+                <p className="text-xs text-gray-400">Tamanho máximo {MAX_SIZE_BYTES / 1024 / 1024}MB</p>
               </>
             )}
             <input
               ref={inputRef}
               type="file"
-              accept=".pdf,.docx,.doc,.pptx,.xlsx"
+              accept=".pdf,.docx,.doc,.pptx,.xlsx,.md,.txt"
               onChange={handleFileChange}
               className="hidden"
             />
