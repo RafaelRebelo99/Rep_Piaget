@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server'
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 import { HumanMessage, SystemMessage, AIMessage } from '@langchain/core/messages'
 
-const model = new ChatGoogleGenerativeAI({
-  model: 'gemini-2.5-flash',
-  apiKey: process.env.GOOGLE_API_KEY,
-})
-
 export async function POST(req: Request) {
   try {
     const { messages, disciplineName } = await req.json()
+
+    const model = new ChatGoogleGenerativeAI({
+      model: 'gemini-2.5-flash',
+      apiKey: process.env.GOOGLE_API_KEY,
+    })
 
     const systemPrompt = new SystemMessage(
       `És um assistente académico da plataforma REP do Instituto Piaget.
