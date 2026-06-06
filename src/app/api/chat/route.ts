@@ -1,10 +1,28 @@
 import { NextResponse } from 'next/server'
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 import { HumanMessage, SystemMessage, AIMessage } from '@langchain/core/messages'
+import { createClient } from '@/utils/supabase/server'
+import { generateEmbedding } from '@/utils/extractText'
 
 export async function POST(req: Request) {
   try {
-    const { messages, disciplineName } = await req.json()
+    const { messages, disciplineName, disciplineId } = await req.json()
+
+    const supabase = await createClient()
+
+    // Converter a última pergunta em embedding e pesquisar materiais relevantes
+    const lastQuestion = messages[messages.length - 1].content
+    const queryEmbedding = await generateEmbedding(lastQuestion)
+
+    const { data: chunks } = await supabase.rpc('search_materials', {
+      query_embedding: queryEmbedding,
+      match_count: 3,
+      p_discipline_id: disciplineId ?? null,
+    })
+
+    const context = chunks && chunks.length > 0
+      ? chunks.map((c: { title: string; content: string }) => `${c.title}:\n${c.content}`).join('\n\n')
+      : ''
 
     const model = new ChatGoogleGenerativeAI({
       model: 'gemini-2.5-flash',
@@ -16,7 +34,9 @@ export async function POST(req: Request) {
 Ajudas estudantes com dúvidas sobre a disciplina de ${disciplineName ?? 'uma unidade curricular'}.
 Responde sempre em português europeu.
 Sê conciso e claro.
-Não respondas a perguntas fora do contexto académico.`
+Só podes usar informação dos materiais, menciona o título do documento de onde retiraste.
+Se não existirem materiais disponíveis, diz que não tens informação suficiente para responder.
+${context ? `\nResponde com base nos seguintes materiais:\n\n${context}` : ''}`
     )
 
     const history = messages.map((msg: { role: string; content: string }) =>
