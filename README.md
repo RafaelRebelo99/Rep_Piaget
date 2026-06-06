@@ -15,7 +15,7 @@ O REP é uma plataforma académica desenvolvida para os alunos dos cursos tecnol
 - **Frontend** Next.js, TypeScript, Tailwind CSS 
 - **Backend** Next.js API Routes
 - **Base de dados** Supabase (PostgreSQL)
-- **Chat Bot** OpenAI API
+- **Chat Bot** Gemini API + LangChain (RAG)
   
 ## ⚙️ Setup e Instalação Local
 Para correres o projeto localmente com todas as dependências necessárias, segue os passos abaixo.
@@ -54,6 +54,16 @@ Para que a aplicação consiga comunicar com a base de dados e com a autenticaç
    NEXT_PUBLIC_SUPABASE_URL=https://teu-id-de-projeto.supabase.co
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=tua-chave-anon-public...
    ```
+- (Google AI API)
+
+1. Vai ao [Google AI Studio](https://aistudio.google.com/), faz login e navega para **Get API Key**.
+2. Clica em **Create API Key** e copia a chave gerada.
+3. Abre o ficheiro `.env.local` e preenche o respetivo valor:
+   ```env
+   GOOGLE_API_KEY=tua-chave-google-ai...
+   ```
+> Consulta a [documentação do chatbot](docs/chatbot.md) para mais detalhes sobre a configuração do RAG.
+
 - (Resend API)
 
 1. Para que o formulário de suporte consiga enviar emails, precisas de configurar a tua chave de API do Resend.
