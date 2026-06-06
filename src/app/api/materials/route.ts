@@ -52,13 +52,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: storageError.message }, { status: 500 })
     }
 
-    // Extração de texto e geração de embedding para PDFs
+    // Extração de texto e geração de embedding para PDFs e DOCX
     let content: string | null = null
     let embedding: number[] | null = null
-    if (ext === 'pdf') {
-      const { extractTextFromPDF, generateEmbedding } = await import('@/utils/extractText')
+    if (ext === 'pdf' || ext === 'docx') {
+      const { extractTextFromPDF, extractTextFromWord, generateEmbedding } = await import('@/utils/extractText')
       const buffer = Buffer.from(await file.arrayBuffer())
-      const docs = await extractTextFromPDF(buffer)
+      const docs = ext === 'pdf'
+        ? await extractTextFromPDF(buffer)
+        : await extractTextFromWord(buffer)
       content = docs.map(doc => doc.pageContent).join('\n')
       embedding = await generateEmbedding(content)
     }
