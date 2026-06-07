@@ -112,7 +112,7 @@ export default function Navbar({
   const mobileLinks = user ? navLinks : [...navLinks, ...authLinks]
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+    <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 select-none">
       <nav className="max-w-6xl mx-auto px-4 h-14 flex items-center" aria-label="Navegação principal">
         <Link href="/" className="hidden md:block text-primary font-bold text-xl tracking-tight" aria-label="REP - Página inicial">
           REP
