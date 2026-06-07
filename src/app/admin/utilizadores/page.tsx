@@ -18,8 +18,9 @@ export default async function UtilizadoresPage(): Promise<React.JSX.Element> {
 
   const { data: utilizadores } = await supabase
     .from('profiles')
-    .select('id, full_name, email, role, status, created_at')
+    .select('id, full_name, email, role, status, can_upload')
     .order('created_at', { ascending: false })
 
-  return <UtilizadoresClient utilizadores={utilizadores ?? []} />
+  return <UtilizadoresClient utilizadores={utilizadores ?? []} adminId={user.id} />
 }
+

@@ -12,23 +12,19 @@ interface Utilizador {
   email: string | null
   role: Role
   status: Status
-  created_at: string
+  can_upload: boolean | null
 }
 
 interface Props {
   utilizadores: Utilizador[]
+  adminId: string
 }
 
 const ITEMS_PER_PAGE = 10
 
 function getInitials(name: string | null): string {
   if (!name) return '?'
-  return name
-    .split(' ')
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
+  return name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
 }
 
 const avatarColors: Record<number, { bg: string; text: string }> = {
@@ -40,8 +36,7 @@ const avatarColors: Record<number, { bg: string; text: string }> = {
 }
 
 function getAvatarColor(id: string): { bg: string; text: string } {
-  const index = id.charCodeAt(0) % 5
-  return avatarColors[index]
+  return avatarColors[id.charCodeAt(0) % 5]
 }
 
 function RoleBadge({ role }: { role: Role }): React.JSX.Element {
@@ -73,11 +68,11 @@ function StatusBadge({ status }: { status: Status }): React.JSX.Element {
   )
 }
 
-export default function UtilizadoresClient({ utilizadores: initial }: Props): React.JSX.Element {
+export default function UtilizadoresClient({ utilizadores: initial, adminId }: Props): React.JSX.Element {
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>(initial)
   const [search, setSearch] = useState('')
-  const [filterStatus, setFilterStatus] = useState<Status | 'ALL'>('ALL')
   const [filterRole, setFilterRole] = useState<Role | 'ALL'>('ALL')
+  const [filterStatus, setFilterStatus] = useState<Status | 'ALL'>('ALL')
   const [page, setPage] = useState(1)
   const [isPending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ id: string; message: string } | null>(null)
@@ -90,26 +85,30 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
         search === '' ||
         u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
         u.email?.toLowerCase().includes(search.toLowerCase())
-      const matchStatus = filterStatus === 'ALL' || u.status === filterStatus
       const matchRole = filterRole === 'ALL' || u.role === filterRole
-      return matchSearch && matchStatus && matchRole
+      const matchStatus = filterStatus === 'ALL' || u.status === filterStatus
+      return matchSearch && matchRole && matchStatus
     })
-  }, [utilizadores, search, filterStatus, filterRole])
+  }, [utilizadores, search, filterRole, filterStatus])
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
 
-  async function updateUser(id: string, updates: Partial<Pick<Utilizador, 'role' | 'status'>>, message: string): Promise<void> {
-    startTransition(async () => {
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', id)
+  async function logAction(action: string): Promise<void> {
+    await supabase.from('audit_logs').insert({ admin_id: adminId, action })
+  }
 
+  async function updateUser(
+    id: string,
+    updates: Partial<Pick<Utilizador, 'role' | 'status' | 'can_upload'>>,
+    message: string,
+    logMessage: string
+  ): Promise<void> {
+    startTransition(async () => {
+      const { error } = await supabase.from('profiles').update(updates).eq('id', id)
       if (!error) {
-        setUtilizadores((prev) =>
-          prev.map((u) => (u.id === id ? { ...u, ...updates } : u))
-        )
+        await logAction(logMessage)
+        setUtilizadores((prev) => prev.map((u) => (u.id === id ? { ...u, ...updates } : u)))
         setFeedback({ id, message })
         setTimeout(() => setFeedback(null), 2500)
       }
@@ -119,23 +118,37 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
   function handlePromote(u: Utilizador): void {
     const newRole: Role = u.role === 'ADMIN' ? 'USER' : 'ADMIN'
     const message = newRole === 'ADMIN' ? 'Promovido a Admin' : 'Removido de Admin'
-    updateUser(u.id, { role: newRole }, message)
+    const logMsg = newRole === 'ADMIN'
+      ? `UTILIZADOR PROMOVIDO A ADMIN: ${u.full_name ?? u.email}`
+      : `ADMIN REMOVIDO: ${u.full_name ?? u.email}`
+    updateUser(u.id, { role: newRole }, message, logMsg)
+  }
+
+  function handleToggleUpload(u: Utilizador): void {
+    const newValue = !u.can_upload
+    const message = newValue ? 'Upload autorizado' : 'Upload revogado'
+    const logMsg = newValue
+      ? `UPLOAD AUTORIZADO: ${u.full_name ?? u.email}`
+      : `UPLOAD REVOGADO: ${u.full_name ?? u.email}`
+    updateUser(u.id, { can_upload: newValue }, message, logMsg)
   }
 
   function handleSuspend(u: Utilizador): void {
     const newStatus: Status = u.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED'
     const message = newStatus === 'SUSPENDED' ? 'Utilizador suspenso' : 'Suspensão removida'
-    updateUser(u.id, { status: newStatus }, message)
+    const logMsg = newStatus === 'SUSPENDED'
+      ? `UTILIZADOR SUSPENSO: ${u.full_name ?? u.email}`
+      : `SUSPENSÃO REMOVIDA: ${u.full_name ?? u.email}`
+    updateUser(u.id, { status: newStatus }, message, logMsg)
   }
 
   function handleBan(u: Utilizador): void {
     const newStatus: Status = u.status === 'BANNED' ? 'ACTIVE' : 'BANNED'
     const message = newStatus === 'BANNED' ? 'Utilizador banido' : 'Ban removido'
-    updateUser(u.id, { status: newStatus }, message)
-  }
-
-  function formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('pt-PT', { month: 'short', year: 'numeric' })
+    const logMsg = newStatus === 'BANNED'
+      ? `UTILIZADOR BANIDO: ${u.full_name ?? u.email}`
+      : `BAN REMOVIDO: ${u.full_name ?? u.email}`
+    updateUser(u.id, { status: newStatus }, message, logMsg)
   }
 
   return (
@@ -165,6 +178,16 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
         </div>
 
         <select
+          value={filterRole}
+          onChange={(e) => { setFilterRole(e.target.value as Role | 'ALL'); setPage(1) }}
+          className="h-10 px-3 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 outline-none cursor-pointer"
+        >
+          <option value="ALL">Todos os papéis</option>
+          <option value="ADMIN">Admin</option>
+          <option value="USER">Utilizador</option>
+        </select>
+
+        <select
           value={filterStatus}
           onChange={(e) => { setFilterStatus(e.target.value as Status | 'ALL'); setPage(1) }}
           className="h-10 px-3 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 outline-none cursor-pointer"
@@ -173,16 +196,6 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
           <option value="ACTIVE">Ativo</option>
           <option value="SUSPENDED">Suspenso</option>
           <option value="BANNED">Banido</option>
-        </select>
-
-        <select
-          value={filterRole}
-          onChange={(e) => { setFilterRole(e.target.value as Role | 'ALL'); setPage(1) }}
-          className="h-10 px-3 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 outline-none cursor-pointer"
-        >
-          <option value="ALL">Todos os papéis</option>
-          <option value="ADMIN">Admin</option>
-          <option value="USER">Utilizador</option>
         </select>
       </div>
 
@@ -194,7 +207,7 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Utilizador</th>
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Papel</th>
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Estado</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Membro desde</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Pode Carregar</th>
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Ações</th>
             </tr>
           </thead>
@@ -210,7 +223,8 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
                 const { bg, text } = getAvatarColor(u.id)
                 const isFeedback = feedback?.id === u.id
                 return (
-                  <tr key={u.id} className={`transition-colors ${isFeedback ? 'bg-green-50/50' : 'hover:bg-gray-50/50'}`}>
+                  <tr key={u.id} className={`transition-colors ${isFeedback ? 'bg-green-50/40' : 'hover:bg-gray-50/50'}`}>
+
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${bg} ${text}`}>
@@ -222,9 +236,9 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5">
-                      <RoleBadge role={u.role} />
-                    </td>
+
+                    <td className="px-5 py-3.5"><RoleBadge role={u.role} /></td>
+
                     <td className="px-5 py-3.5">
                       {isFeedback ? (
                         <span className="text-xs text-green-700 font-medium">{feedback.message}</span>
@@ -232,19 +246,25 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
                         <StatusBadge status={u.status} />
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-gray-400">
-                      {formatDate(u.created_at)}
+
+                    <td className="px-5 py-3.5">
+                      <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full ${
+                        u.can_upload ? 'bg-green-50 text-green-800' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {u.can_upload ? 'Sim' : 'Não'}
+                      </span>
                     </td>
+
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
+
+                        {/* Promover / Remover Admin */}
                         <button
                           onClick={() => handlePromote(u)}
                           disabled={isPending}
                           title={u.role === 'ADMIN' ? 'Remover Admin' : 'Promover a Admin'}
                           className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-colors ${
-                            u.role === 'ADMIN'
-                              ? 'border-red-200 bg-red-50 hover:bg-red-100'
-                              : 'border-gray-200 hover:bg-gray-50'
+                            u.role === 'ADMIN' ? 'border-red-200 bg-red-50 hover:bg-red-100' : 'border-gray-200 hover:bg-gray-50'
                           }`}
                         >
                           <svg className={`w-3.5 h-3.5 ${u.role === 'ADMIN' ? 'text-red-700' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -252,14 +272,27 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
                           </svg>
                         </button>
 
+                        {/* Autorizar / Revogar Upload */}
+                        <button
+                          onClick={() => handleToggleUpload(u)}
+                          disabled={isPending}
+                          title={u.can_upload ? 'Revogar Upload' : 'Autorizar Upload'}
+                          className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-colors ${
+                            u.can_upload ? 'border-green-200 bg-green-50 hover:bg-green-100' : 'border-gray-200 hover:bg-gray-50'
+                          }`}
+                        >
+                          <svg className={`w-3.5 h-3.5 ${u.can_upload ? 'text-green-700' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                        </button>
+
+                        {/* Suspender */}
                         <button
                           onClick={() => handleSuspend(u)}
                           disabled={isPending}
                           title={u.status === 'SUSPENDED' ? 'Remover suspensão' : 'Suspender'}
                           className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-colors ${
-                            u.status === 'SUSPENDED'
-                              ? 'border-amber-200 bg-amber-50 hover:bg-amber-100'
-                              : 'border-gray-200 hover:bg-gray-50'
+                            u.status === 'SUSPENDED' ? 'border-amber-200 bg-amber-50 hover:bg-amber-100' : 'border-gray-200 hover:bg-gray-50'
                           }`}
                         >
                           <svg className={`w-3.5 h-3.5 ${u.status === 'SUSPENDED' ? 'text-amber-700' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -267,20 +300,20 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
                           </svg>
                         </button>
 
+                        {/* Banir */}
                         <button
                           onClick={() => handleBan(u)}
                           disabled={isPending}
                           title={u.status === 'BANNED' ? 'Remover ban' : 'Banir'}
                           className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-colors ${
-                            u.status === 'BANNED'
-                              ? 'border-red-200 bg-red-50 hover:bg-red-100'
-                              : 'border-gray-200 hover:bg-gray-50'
+                            u.status === 'BANNED' ? 'border-red-200 bg-red-50 hover:bg-red-100' : 'border-gray-200 hover:bg-gray-50'
                           }`}
                         >
                           <svg className={`w-3.5 h-3.5 ${u.status === 'BANNED' ? 'text-red-700' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                           </svg>
                         </button>
+
                       </div>
                     </td>
                   </tr>
@@ -290,7 +323,6 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
           </tbody>
         </table>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-400">
@@ -306,7 +338,6 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 const p = i + 1
                 return (
@@ -314,16 +345,13 @@ export default function UtilizadoresClient({ utilizadores: initial }: Props): Re
                     key={p}
                     onClick={() => setPage(p)}
                     className={`w-7 h-7 rounded-lg border text-xs font-medium transition-colors ${
-                      page === p
-                        ? 'bg-primary text-white border-primary'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      page === p ? 'bg-primary text-white border-primary' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     {p}
                   </button>
                 )
               })}
-
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}

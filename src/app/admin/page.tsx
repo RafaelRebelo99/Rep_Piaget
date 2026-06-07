@@ -9,55 +9,6 @@ interface Stat {
   icon: React.ReactNode
 }
 
-import Link from 'next/link'
-
-const stats: Stat[] = [
-  {
-    label: 'Total Utilizadores',
-    value: '2,842',
-    badge: '+12%',
-    badgeClass: 'text-green-700 bg-green-50',
-    icon: (
-      <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Total Ficheiros',
-    value: '15,903',
-    badge: '+5%',
-    badgeClass: 'text-green-700 bg-green-50',
-    icon: (
-      <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Ficheiros Pendentes',
-    value: '142',
-    badge: 'Crítico',
-    badgeClass: 'text-red-700 bg-red-50',
-    icon: (
-      <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Support Tickets',
-    value: '12',
-    badge: 'Normal',
-    badgeClass: 'text-gray-500 bg-gray-100',
-    icon: (
-      <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-]
-
 export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
   const supabase = await createClient()
 
@@ -72,6 +23,60 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
 
   if (profile?.role !== 'ADMIN') redirect('/')
 
+  // Contagem de utilizadores
+  const { count: totalUtilizadores } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+
+  // Contagem total de ficheiros
+  const { count: totalFicheiros } = await supabase
+    .from('materials')
+    .select('*', { count: 'exact', head: true })
+
+  // Contagem de ficheiros pendentes
+  const { count: ficheirosPendentes } = await supabase
+    .from('materials')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending')
+
+  const stats: Stat[] = [
+    {
+      label: 'Total Utilizadores',
+      value: (totalUtilizadores ?? 0).toLocaleString('pt-PT'),
+      badge: 'Total',
+      badgeClass: 'text-blue-700 bg-blue-50',
+      icon: (
+        <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Total Ficheiros',
+      value: (totalFicheiros ?? 0).toLocaleString('pt-PT'),
+      badge: 'Total',
+      badgeClass: 'text-green-700 bg-green-50',
+      icon: (
+        <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Ficheiros Pendentes',
+      value: (ficheirosPendentes ?? 0).toLocaleString('pt-PT'),
+      badge: ficheirosPendentes && ficheirosPendentes > 0 ? 'Crítico' : 'Normal',
+      badgeClass: ficheirosPendentes && ficheirosPendentes > 0
+        ? 'text-red-700 bg-red-50'
+        : 'text-green-700 bg-green-50',
+      icon: (
+        <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        </svg>
+      ),
+    },
+  ]
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
 
@@ -83,11 +88,10 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
           </p>
           <h1 className="text-2xl font-bold text-gray-900">Painel de Administração</h1>
         </div>
-
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-3 gap-6">
         {stats.map(({ label, value, badge, badgeClass, icon }: Stat) => (
           <div
             key={label}
