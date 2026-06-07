@@ -64,6 +64,8 @@ create table public.materials (
   file_path text not null, -- Ex: [ID_DISCIPLINA]/[TIMESTAMP]-nome.pdf
   file_type text not null, -- Ex: PDF, DOCX, ZIP
   file_size int8,
+  content text,
+  embedding vector(3072),
   status text default 'VISIBLE' check (status in ('VISIBLE', 'HIDDEN')),
   created_at timestamptz default now()
 );
