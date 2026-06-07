@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, ArrowUp } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -13,10 +14,14 @@ interface ChatPanelProps {
   disciplineName: string
 }
 
+const MIN_WIDTH = 320
+const MAX_WIDTH_RATIO = 0.5
+
 export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [panelWidth, setPanelWidth] = useState(600)
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -24,10 +29,44 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
     },
   ])
   const bottomRef = useRef<HTMLDivElement>(null)
+  const isDragging = useRef(false)
+  const startX = useRef(0)
+  const startWidth = useRef(0)
+
+  useEffect(() => {
+    if (window.innerWidth >= 640) {
+      setPanelWidth(Math.round(window.innerWidth * 0.5))
+    }
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  const onDrag = useCallback((e: MouseEvent) => {
+    if (!isDragging.current) return
+    const delta = startX.current - e.clientX
+    const maxWidth = Math.round(window.innerWidth * MAX_WIDTH_RATIO)
+    setPanelWidth(Math.min(Math.max(MIN_WIDTH, startWidth.current + delta), maxWidth))
+  }, [])
+
+  const onDragEnd = useCallback(() => {
+    isDragging.current = false
+    document.removeEventListener('mousemove', onDrag)
+    document.removeEventListener('mouseup', onDragEnd)
+    document.body.style.userSelect = ''
+    document.body.style.cursor = ''
+  }, [onDrag])
+
+  function onDragStart(e: React.MouseEvent) {
+    isDragging.current = true
+    startX.current = e.clientX
+    startWidth.current = panelWidth
+    document.body.style.userSelect = 'none'
+    document.body.style.cursor = 'ew-resize'
+    document.addEventListener('mousemove', onDrag)
+    document.addEventListener('mouseup', onDragEnd)
+  }
 
   async function sendMessage() {
     const text = input.trim()
@@ -63,10 +102,17 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
     }
   }
 
+  function handleInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setInput(e.target.value)
+    e.target.style.height = 'auto'
+    e.target.style.height = `${e.target.scrollHeight}px`
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
+      e.currentTarget.style.height = 'auto'
     }
   }
 
@@ -85,10 +131,17 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
 
       {/* Painel lateral */}
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] z-50 bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full z-50 bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out w-full sm:w-auto ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 640 ? panelWidth : undefined }}
       >
+        {/* Handle de redimensionamento */}
+        <div
+          onMouseDown={onDragStart}
+          className="absolute left-0 top-0 h-full w-1.5 cursor-ew-resize hover:bg-gray-200 transition-colors hidden sm:block"
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
@@ -127,7 +180,13 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
                     : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                 }`}
               >
-                {msg.content}
+                {msg.role === 'assistant' ? (
+                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-strong:text-gray-900">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  msg.content
+                )}
               </div>
             </div>
           ))}
@@ -152,11 +211,11 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
           <div className="flex items-end gap-2 bg-gray-50 rounded-2xl px-4 py-3">
             <textarea
               value={input}
-              onChange={e => setInput(e.target.value)}
+              onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder={`Pergunta-me qualquer coisa sobre ${disciplineName}...`}
               rows={1}
-              className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 resize-none outline-none"
+              className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 resize-none outline-none max-h-40 overflow-y-auto"
             />
             <button
               onClick={sendMessage}
@@ -172,7 +231,7 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
         </div>
       </div>
 
-      {/* Overlay escuro */}
+      {/* Overlay escuro mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-40 sm:hidden"

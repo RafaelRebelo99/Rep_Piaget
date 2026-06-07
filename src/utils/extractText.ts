@@ -18,6 +18,19 @@ export async function extractTextFromWord(buffer: Buffer): Promise<Document[]> {
   return [new Document({ pageContent: result.value })]
 }
 
+// Função de extração de texto de PPTX usando officeparser
+export async function extractTextFromOffice(buffer: Buffer): Promise<Document[]> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+  const { parseOffice } = require('officeparser')
+  const ast = await parseOffice(buffer)
+  return [new Document({ pageContent: ast.toText() })]
+}
+
+// Função de extração de texto de arquivos de texto simples (txt, md)
+export async function extractTextFromPlain(buffer: Buffer): Promise<Document[]> {
+  return [new Document({ pageContent: buffer.toString('utf-8') })]
+}
+
 export async function generateEmbedding(text: string): Promise<number[]> {
   const embeddings = new GoogleGenerativeAIEmbeddings({
     model: 'gemini-embedding-001',
