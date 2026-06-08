@@ -22,6 +22,7 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [panelWidth, setPanelWidth] = useState(600)
+  const [online, setOnline] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -37,6 +38,10 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
     if (window.innerWidth >= 640) {
       setPanelWidth(Math.round(window.innerWidth * 0.5))
     }
+    fetch('/api/chat/status')
+      .then(res => res.json())
+      .then(data => setOnline(data.online))
+      .catch(() => setOnline(false))
   }, [])
 
   useEffect(() => {
@@ -122,7 +127,7 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-[#7B1D1D] text-white px-4 py-3 rounded-full shadow-lg hover:bg-[#6a1818] transition-colors text-sm font-semibold"
+          className="fixed bottom-20 right-6 z-40 flex items-center gap-2 bg-[#7B1D1D] text-white px-4 py-3 rounded-full shadow-lg hover:bg-[#6a1818] transition-colors text-sm font-semibold"
         >
           <div className="w-2 h-2 rounded-full bg-green-400" />
           REP AI
@@ -151,8 +156,8 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
             <div>
               <p className="text-sm font-semibold text-gray-900">REP AI</p>
               <div className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                <span className="text-[10px] text-gray-400 uppercase tracking-wider">Online</span>
+                <div className={`w-1.5 h-1.5 rounded-full ${online ? 'bg-green-400' : 'bg-gray-300'}`} />
+                <span className="text-[10px] text-gray-400 uppercase tracking-wider">{online ? 'Online' : 'Offline'}</span>
               </div>
             </div>
           </div>
@@ -174,7 +179,7 @@ export default function ChatPanel({ disciplineId, disciplineName }: ChatPanelPro
                 </div>
               )}
               <div
-                className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words overflow-hidden ${
                   msg.role === 'user'
                     ? 'bg-[#7B1D1D] text-white rounded-br-sm'
                     : 'bg-gray-100 text-gray-800 rounded-bl-sm'
