@@ -3,13 +3,14 @@ import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import FeedbackSection from '@/components/FeedbackSection'
 import MaterialsSection from '@/components/MaterialsSection'
+import ChatPanel from '@/components/ChatPanel'
 
 export default async function UnidadeCurricularPage({
   params
 }: {
   params: Promise<{ cursoId: string, disciplineId: string }>
 }) {
-  
+
   const { cursoId, disciplineId } = await params
   const supabase = await createClient()
 
@@ -35,7 +36,7 @@ export default async function UnidadeCurricularPage({
   return (
     <div className="h-full bg-gray-50 flex flex-col">
       <main className="flex-1 max-w-6xl mx-auto px-4 py-10 w-full">
-        
+
         {/* Navegação Estrutural (Breadcrumbs) */}
         <nav className="text-xs text-gray-400 mb-6 text-center flex items-center justify-center gap-2">
           <Link href="/" className="hover:text-primary transition-colors">Cursos</Link>
@@ -46,7 +47,7 @@ export default async function UnidadeCurricularPage({
           <span className="text-gray-300">›</span>
           <span className="text-gray-600 font-medium">{details.discipline_name}</span>
         </nav>
-        
+
         {/* Cabeçalho de Identificação da Disciplina */}
         <header className="text-center mb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
@@ -69,7 +70,7 @@ export default async function UnidadeCurricularPage({
 
         {/* Grelha de Conteúdo Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
+
           {/* Zona Central: Lista de Materiais com Pesquisa e Filtros */}
           <MaterialsSection materials={materials ?? []} disciplineName={details.discipline_name} disciplineId={disciplineId} />
 
@@ -77,9 +78,11 @@ export default async function UnidadeCurricularPage({
           <aside className="lg:col-span-5">
             <FeedbackSection feedbacks={feedbacks ?? []} />
           </aside>
-          
+
         </div>
       </main>
+
+      <ChatPanel disciplineId={disciplineId} disciplineName={details.discipline_name} />
     </div>
   )
 }

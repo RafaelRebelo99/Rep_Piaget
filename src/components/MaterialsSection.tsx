@@ -37,15 +37,15 @@ export default function MaterialsSection({ materials, disciplineName, discipline
 
   return (
     <section className="lg:col-span-7">
-      
+
       {/* Barra de Pesquisa */}
       <div className="mb-8">
-        <SearchBar 
-          placeholder={`Pesquisar em ${disciplineName}...`} 
+        <SearchBar
+          placeholder={`Pesquisar em ${disciplineName}...`}
           onSearch={(value) => {
             setSearchQuery(value)
-            setVisibleCount(10) // Reinicia a paginação ao pesquisar
-          }} 
+            setVisibleCount(10)
+          }}
         />
       </div>
 
@@ -54,7 +54,7 @@ export default function MaterialsSection({ materials, disciplineName, discipline
         <h2 className="text-2xl font-bold text-gray-900">Repositório</h2>
         <div className="flex gap-4 items-center">
           <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95">
-            <Bot className="w-4 h-4" /> REP AI
+            <Bot className="w-4 h-4" /> Gerar Quizz
           </button>
           <button
             onClick={() => setModalOpen(true)}

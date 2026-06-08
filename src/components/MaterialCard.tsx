@@ -97,7 +97,6 @@ export default function MaterialCard({ material }: { material: Material }) {
     let newVote: number | null = clickedValue
 
     if (userVote === clickedValue) {
-      // Remover Voto da BD (faz o DELETE)
       const { error } = await supabase
         .from('votes')
         .delete()
@@ -107,11 +106,10 @@ export default function MaterialCard({ material }: { material: Material }) {
       if (error) {
         console.error('Erro ao remover o voto na BD:', error.message)
         setIsVoting(false)
-        return 
+        return
       }
       newVote = null
     } else {
-      // Alterar ou Criar Voto na BD (faz o UPSERT)
       const { error } = await supabase
         .from('votes')
         .upsert({
@@ -123,7 +121,7 @@ export default function MaterialCard({ material }: { material: Material }) {
       if (error) {
         console.error('Erro ao registar o voto na BD:', error.message)
         setIsVoting(false)
-        return 
+        return
       }
     }
 
@@ -134,11 +132,10 @@ export default function MaterialCard({ material }: { material: Material }) {
 
   if (isDismissed) return null
 
-  // Secção Condicional: Ficheiro Ocultado na BD ou com Score Crítico (<= -5)
+  // Secção Condicional: Ficheiro com Score Crítico (<= -5)
   if (currentScore <= -5) {
     return (
       <div className="bg-red-50/60 p-4 rounded-xl border border-red-100 flex items-center justify-between transition-all animate-fadeIn">
-        
         <div className="flex items-center gap-3">
           <div className="bg-red-100 p-2 rounded-lg text-red-600">
             <AlertTriangle className="w-5 h-5" />
@@ -154,8 +151,6 @@ export default function MaterialCard({ material }: { material: Material }) {
         </div>
 
         <div className="flex items-center gap-2">
-          
-          {/* REVERTER VOTO */}
           {userVote !== null && (
             <button
               type="button"
@@ -166,8 +161,6 @@ export default function MaterialCard({ material }: { material: Material }) {
               <RotateCcw className="w-3.5 h-3.5" /> Reverter Meu Voto
             </button>
           )}
-
-          {/* CONFIRMAR E MANTER VOTO (-5) */}
           <button
             type="button"
             onClick={() => setIsDismissed(true)}
@@ -176,7 +169,6 @@ export default function MaterialCard({ material }: { material: Material }) {
           >
             <Check className="w-4 h-4" />
           </button>
-
         </div>
       </div>
     )
@@ -207,11 +199,9 @@ export default function MaterialCard({ material }: { material: Material }) {
       {/* Secção Direita: Sistema de Votação Dinâmico e Botão de Download */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-1 text-gray-400">
-          
-          {/* Botão ThumbsUp */}
-          <button 
-            type="button" 
-            aria-label="Gostar" 
+          <button
+            type="button"
+            aria-label="Gostar"
             onClick={() => handleVote('up')}
             disabled={isVoting || !userId}
             className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -220,18 +210,16 @@ export default function MaterialCard({ material }: { material: Material }) {
           >
             <ThumbsUp className="w-4 h-4" />
           </button>
-          
-          {/* Score Dinâmico */}
+
           <span className={`text-sm font-bold min-w-[20px] text-center transition-colors ${
             currentScore > 0 ? 'text-green-600' : currentScore < 0 ? 'text-red-500' : 'text-gray-600'
           }`}>
             {currentScore}
           </span>
-          
-          {/* Botão ThumbsDown */}
-          <button 
-            type="button" 
-            aria-label="Não Gostar" 
+
+          <button
+            type="button"
+            aria-label="Não Gostar"
             onClick={() => handleVote('down')}
             disabled={isVoting || !userId}
             className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -240,14 +228,12 @@ export default function MaterialCard({ material }: { material: Material }) {
           >
             <ThumbsDown className="w-4 h-4" />
           </button>
-
         </div>
-        
+
         <button className="bg-gray-50 p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600">
           <Download className="w-5 h-5" />
         </button>
       </div>
-
     </div>
   )
 }
