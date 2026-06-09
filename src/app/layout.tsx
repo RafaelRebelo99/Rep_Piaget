@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { ErrorProvider } from '@/utils/errorContext'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -63,9 +64,11 @@ export default async function RootLayout({
   return (
     <html lang="pt" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <Navbar initialUser={initialUser} />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <ErrorProvider>
+          <Navbar initialUser={initialUser} />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </ErrorProvider>
       </body>
     </html>
   )

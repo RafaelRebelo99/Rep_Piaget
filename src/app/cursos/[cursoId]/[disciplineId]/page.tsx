@@ -76,7 +76,7 @@ export default async function UnidadeCurricularPage({
 
           {/* Barra Lateral: Lista de Feedbacks e Comentários */}
           <aside className="lg:col-span-5">
-            <FeedbackSection feedbacks={feedbacks ?? []} />
+           <FeedbackSection feedbacks={feedbacks ?? []} disciplineId={disciplineId} />
           </aside>
 
         </div>

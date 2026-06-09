@@ -197,7 +197,7 @@ export default function MaterialCard({ material }: { material: Material }) {
       </div>
 
       {/* Secção Direita: Sistema de Votação Dinâmico e Botão de Download */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 select-none">
         <div className="flex items-center gap-1 text-gray-400">
           <button
             type="button"
