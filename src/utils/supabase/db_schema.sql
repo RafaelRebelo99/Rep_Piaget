@@ -155,6 +155,7 @@ create or replace view public.vw_materials_detailed as
 select 
     m.id as material_id,
     m.discipline_id,
+    m.user_id,
     m.title,
     m.description,
     m.file_path,
