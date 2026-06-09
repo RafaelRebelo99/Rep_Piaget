@@ -412,7 +412,6 @@ function FeedbackItem({ fb, currentUserId, maxChars, isParentLoading, onDelete, 
           {/* Menu de Operações do Proprietário do Registo */}
           {isOwner && !isEditing && (
             <div className={`absolute top-3 right-3 flex gap-2 transition-opacity ${isParentLoading ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover/card:opacity-100'}`}>
-              {/* 🌟 CORRIGIDO: Injetada a tag <button> que faltava e que causava o erro de sintaxe */}
               <button onClick={() => setIsEditing(true)} aria-label="Editar" className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
                 <Edit2 className="w-3 h-3" />
               </button>

@@ -31,6 +31,7 @@ export default defineConfig({
           { text: 'Autenticação', link: '/autenticacao' },
           { text: 'Integração de Email', link: '/resend' },
           { text: 'Sistema de Votação', link: '/votacao' },
+          { text: 'Chatbot REP AI', link: '/chatbot' },
         ]
       }
     ],

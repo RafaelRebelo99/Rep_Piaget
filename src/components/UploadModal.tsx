@@ -15,14 +15,15 @@ interface Category {
 interface Props {
   disciplineId: string
   disciplineName: string
+  preloadedCategories?: Category[]
   onClose: () => void
 }
 
-export default function UploadModal({ disciplineId, disciplineName, onClose }: Props) {
+export default function UploadModal({ disciplineId, disciplineName, preloadedCategories = [], onClose }: Props) {
   const router = useRouter()
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<Category[]>(preloadedCategories)
   const [title, setTitle] = useState('')
-  const [categoryId, setCategoryId] = useState('')
+  const [categoryId, setCategoryId] = useState(preloadedCategories[0]?.id || '')
   const [file, setFile] = useState<File | null>(null)
   const [dragging, setDragging] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -38,12 +39,14 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
   }, [])
 
   useEffect(() => {
+    if (preloadedCategories.length > 0) return
+
     const supabase = createClient()
     supabase.from('material_categories').select('*').then(({ data }) => {
       setCategories(data ?? [])
       if (data?.[0]) setCategoryId(data[0].id)
     })
-  }, [])
+  }, [preloadedCategories])
 
   function validateAndSetFile(f: File) {
     if (f.size > MAX_SIZE_BYTES) {
@@ -115,86 +118,91 @@ export default function UploadModal({ disciplineId, disciplineName, onClose }: P
           </div>
         ) : (
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1.5">
-              Título
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={`Ex: Resumo de ${disciplineName}`}
-              required
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1.5">
+                Título
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={`Ex: Resumo de ${disciplineName}`}
+                required
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1.5">
-              Categoria
-            </label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              required
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1.5">
+                Categoria
+              </label>
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                required
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+              >
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => inputRef.current?.click()}
+              className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-10 cursor-pointer transition-colors ${
+                dragging ? 'border-primary bg-red-50' : 'border-gray-200 hover:border-primary bg-gray-50'
+              }`}
             >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
+              <CloudUpload className="w-8 h-8 text-gray-400 shrink-0" />
 
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={handleDrop}
-            onClick={() => inputRef.current?.click()}
-            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-10 cursor-pointer transition-colors ${
-              dragging ? 'border-primary bg-red-50' : 'border-gray-200 hover:border-primary bg-gray-50'
-            }`}
-          >
-            <CloudUpload className="w-8 h-8 text-gray-400" />
-            {file ? (
-              <p className="text-sm font-medium text-primary">{file.name}</p>
-            ) : (
-              <>
-                <p className="text-sm text-gray-500">Arraste ficheiros ou clique para carregar</p>
-                <p className="text-xs text-gray-400">Tamanho máximo {formatBytes(MAX_SIZE_BYTES)}</p>
-              </>
+              {file ? (
+                <div className="w-full px-6 text-center">
+                  <p className="text-sm font-semibold text-primary break-all whitespace-pre-wrap">
+                    {file.name}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500">Arraste ficheiros ou clique para carregar</p>
+                  <p className="text-xs text-gray-400">Tamanho máximo {formatBytes(MAX_SIZE_BYTES)}</p>
+                </>
+              )}
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".pdf,.docx,.doc,.pptx,.xlsx,.md,.txt"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+
+            {error && (
+              <p className="text-xs text-red-600 font-medium">{error}</p>
             )}
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".pdf,.docx,.doc,.pptx,.xlsx,.md,.txt"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </div>
 
-          {error && (
-            <p className="text-xs text-red-600 font-medium">{error}</p>
-          )}
-
-          <div className="flex gap-3 mt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-3 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
-            >
-              {loading ? 'A enviar...' : 'Submeter'}
-            </button>
-          </div>
-        </form>
+            <div className="flex gap-3 mt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 py-3 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+              >
+                {loading ? 'A enviar...' : 'Submeter'}
+              </button>
+            </div>
+          </form>
         )}
       </div>
     </div>
