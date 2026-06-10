@@ -7,6 +7,7 @@ import { useGlobalError } from '@/utils/errorContext'
 import MaterialCard from './MaterialCard'
 import SearchBar from './SearchBarDiscipline'
 import UploadModal from './UploadModal'
+import QuizModal from './QuizModal'
 
 // Interface
 interface MaterialsSectionProps {
@@ -24,6 +25,7 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [visibleCount, setVisibleCount] = useState<number>(10)
   const [modalOpen, setModalOpen] = useState(false)
+  const [quizOpen, setQuizOpen] = useState(false)
 
   // Extração de Categorias
   const filterCategories = ['all', ...Array.from(new Set(materials.map(m => m.category_name)))]
@@ -54,7 +56,9 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Repositório</h2>
         <div className="flex gap-4 items-center">
-          <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95">
+          <button
+            onClick={() => setQuizOpen(true)}
+            className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95">
             <Bot className="w-4 h-4" /> Gerar Quizz
           </button>
           <button
@@ -126,6 +130,14 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
           disciplineName={disciplineName}
           preloadedCategories={categories}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+
+      {quizOpen && (
+        <QuizModal
+          disciplineName={disciplineName}
+          materials={materials}
+          onClose={() => setQuizOpen(false)}
         />
       )}
     </section>
