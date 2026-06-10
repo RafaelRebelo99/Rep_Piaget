@@ -64,6 +64,8 @@ create table public.materials (
   file_path text not null, -- Ex: [ID_DISCIPLINA]/[TIMESTAMP]-nome.pdf
   file_type text not null, -- Ex: PDF, DOCX, ZIP
   file_size int8,
+  content text,
+  embedding vector(3072),
   status text default 'VISIBLE' check (status in ('VISIBLE', 'HIDDEN')),
   created_at timestamptz default now()
 );
@@ -153,6 +155,7 @@ create or replace view public.vw_materials_detailed as
 select 
     m.id as material_id,
     m.discipline_id,
+    m.user_id,
     m.title,
     m.description,
     m.file_path,

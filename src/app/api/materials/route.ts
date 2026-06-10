@@ -52,6 +52,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: storageError.message }, { status: 500 })
     }
 
+    // Extração de texto e geração de embedding
+    let content: string | null = null
+    let embedding: number[] | null = null
+    if (['pdf', 'docx', 'pptx', 'txt', 'md'].includes(ext)) {
+      const { extractTextFromPDF, extractTextFromWord, extractTextFromOffice, extractTextFromPlain, generateEmbedding } = await import('@/utils/extractText')
+      const buffer = Buffer.from(await file.arrayBuffer())
+      let docs
+      if (ext === 'pdf') docs = await extractTextFromPDF(buffer)
+      else if (ext === 'docx') docs = await extractTextFromWord(buffer)
+      else if (ext === 'pptx') docs = await extractTextFromOffice(buffer)
+      else docs = await extractTextFromPlain(buffer)
+      content = docs.map(doc => doc.pageContent).join('\n')
+      embedding = await generateEmbedding(content)
+    }
+
     const { error: dbError } = await supabase.from('materials').insert({
       discipline_id: disciplineId,
       user_id: user.id,
@@ -60,6 +75,8 @@ export async function POST(req: Request) {
       file_path: filePath,
       file_type: ext.toUpperCase(),
       file_size: fileSize,
+      content,
+      embedding,
     })
 
     if (dbError) {
@@ -69,7 +86,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (err) {
+    console.error('Erro inesperado:', err)
     return NextResponse.json({ error: 'Erro inesperado.' }, { status: 500 })
   }
 }

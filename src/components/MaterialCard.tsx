@@ -30,7 +30,12 @@ export interface Material {
   file_path?: string;
 }
 
-// Configuração de Ícones e Cores por Extensão
+interface MaterialCardProps {
+  material: Material;
+  hideActions?: boolean;
+  actions?: React.ReactNode; 
+}
+
 const fileTypeConfig: Record<string, { icon: LucideIcon, color: string, bg: string }> = {
   pdf: { icon: FileText, color: 'text-red-600', bg: 'bg-red-50' },
   docx: { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -42,7 +47,7 @@ const fileTypeConfig: Record<string, { icon: LucideIcon, color: string, bg: stri
   default: { icon: File, color: 'text-gray-600', bg: 'bg-gray-50' }
 }
 
-export default function MaterialCard({ material }: { material: Material }) {
+export default function MaterialCard({ material, hideActions = false, actions }: MaterialCardProps) {
   const supabase = createClient()
 
   const [currentScore, setCurrentScore] = useState<number>(material.score)
@@ -97,7 +102,6 @@ export default function MaterialCard({ material }: { material: Material }) {
     let newVote: number | null = clickedValue
 
     if (userVote === clickedValue) {
-      // Remover Voto da BD (faz o DELETE)
       const { error } = await supabase
         .from('votes')
         .delete()
@@ -107,11 +111,10 @@ export default function MaterialCard({ material }: { material: Material }) {
       if (error) {
         console.error('Erro ao remover o voto na BD:', error.message)
         setIsVoting(false)
-        return 
+        return
       }
       newVote = null
     } else {
-      // Alterar ou Criar Voto na BD (faz o UPSERT)
       const { error } = await supabase
         .from('votes')
         .upsert({
@@ -123,7 +126,7 @@ export default function MaterialCard({ material }: { material: Material }) {
       if (error) {
         console.error('Erro ao registar o voto na BD:', error.message)
         setIsVoting(false)
-        return 
+        return
       }
     }
 
@@ -134,11 +137,10 @@ export default function MaterialCard({ material }: { material: Material }) {
 
   if (isDismissed) return null
 
-  // Secção Condicional: Ficheiro Ocultado na BD ou com Score Crítico (<= -5)
+  // Secção Condicional: Ficheiro com Score Crítico (<= -5)
   if (currentScore <= -5) {
     return (
       <div className="bg-red-50/60 p-4 rounded-xl border border-red-100 flex items-center justify-between transition-all animate-fadeIn">
-        
         <div className="flex items-center gap-3">
           <div className="bg-red-100 p-2 rounded-lg text-red-600">
             <AlertTriangle className="w-5 h-5" />
@@ -154,8 +156,6 @@ export default function MaterialCard({ material }: { material: Material }) {
         </div>
 
         <div className="flex items-center gap-2">
-          
-          {/* REVERTER VOTO */}
           {userVote !== null && (
             <button
               type="button"
@@ -166,8 +166,6 @@ export default function MaterialCard({ material }: { material: Material }) {
               <RotateCcw className="w-3.5 h-3.5" /> Reverter Meu Voto
             </button>
           )}
-
-          {/* CONFIRMAR E MANTER VOTO (-5) */}
           <button
             type="button"
             onClick={() => setIsDismissed(true)}
@@ -176,7 +174,6 @@ export default function MaterialCard({ material }: { material: Material }) {
           >
             <Check className="w-4 h-4" />
           </button>
-
         </div>
       </div>
     )
@@ -184,15 +181,15 @@ export default function MaterialCard({ material }: { material: Material }) {
 
   // Visualização Padrão do Material
   return (
-    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
-      <div className="flex items-center gap-4">
-        <div className={`${config.bg} p-3 rounded-lg transition-colors`}>
+    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:shadow-md">
+      <div className="flex items-center gap-4 min-w-0 flex-1">
+        <div className={`${config.bg} p-3 rounded-lg transition-colors shrink-0`}>
           <Icon className={`${config.color} w-6 h-6`} />
         </div>
 
-        <div>
-          <h4 className="font-bold text-gray-800">{material.title}</h4>
-          <div className="flex gap-3 text-[10px] text-gray-400 font-bold uppercase mt-1">
+        <div className="min-w-0 flex-1">
+          <h4 className="font-bold text-gray-800 truncate pr-4 break-words">{material.title}</h4>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-gray-400 font-bold uppercase mt-1">
             <span>{formatBytes(material.file_size)}</span>
             <span>•</span>
             <span className={config.color}>{material.file_type}</span>
@@ -203,12 +200,9 @@ export default function MaterialCard({ material }: { material: Material }) {
           </div>
         </div>
       </div>
-
-      {/* Secção Direita: Sistema de Votação Dinâmico e Botão de Download */}
-      <div className="flex items-center gap-6">
+{/* Secção Direita: Sistema de Votação Dinâmico e Botão de Download */}
+      <div className={`flex items-center justify-between sm:justify-end gap-4 select-none shrink-0 transition-opacity duration-200 ${hideActions ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-1 text-gray-400">
-          
-          {/* Botão ThumbsUp */}
           <button 
             type="button" 
             aria-label="Gostar" 
@@ -220,18 +214,16 @@ export default function MaterialCard({ material }: { material: Material }) {
           >
             <ThumbsUp className="w-4 h-4" />
           </button>
-          
-          {/* Score Dinâmico */}
+
           <span className={`text-sm font-bold min-w-[20px] text-center transition-colors ${
             currentScore > 0 ? 'text-green-600' : currentScore < 0 ? 'text-red-500' : 'text-gray-600'
           }`}>
             {currentScore}
           </span>
-          
-          {/* Botão ThumbsDown */}
-          <button 
-            type="button" 
-            aria-label="Não Gostar" 
+
+          <button
+            type="button"
+            aria-label="Não Gostar"
             onClick={() => handleVote('down')}
             disabled={isVoting || !userId}
             className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -240,14 +232,13 @@ export default function MaterialCard({ material }: { material: Material }) {
           >
             <ThumbsDown className="w-4 h-4" />
           </button>
-
         </div>
-        
+
         <button className="bg-gray-50 p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600">
           <Download className="w-5 h-5" />
         </button>
+        {actions}
       </div>
-
     </div>
   )
 }
