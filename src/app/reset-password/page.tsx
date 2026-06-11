@@ -68,7 +68,7 @@ export default function RecoverPasswordPage() {
       }
 
       setSuccessMessage(
-        data?.message || 'Se o email existir, receberá instruções de recuperação.'
+        data?.message || 'Email de recuperação enviado com sucesso.'
       )
       setEmail('')
     } catch (error) {
