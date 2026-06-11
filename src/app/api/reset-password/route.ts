@@ -7,6 +7,50 @@ function isInstitutionalEmail(email: string) {
   return allowedDomains.some((domain) => email.endsWith(domain))
 }
 
+async function userExistsByEmail(email: string) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Configuração admin do Supabase em falta.')
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+
+  let page = 1
+  const perPage = 1000
+
+  while (true) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({
+      page,
+      perPage,
+    })
+
+    if (error) {
+      throw error
+    }
+
+    const exists = data.users.some(
+      (user) => user.email?.toLowerCase() === email
+    )
+
+    if (exists) {
+      return true
+    }
+
+    if (data.users.length < perPage) {
+      return false
+    }
+
+    page += 1
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { email } = await req.json()
@@ -21,17 +65,27 @@ export async function POST(req: Request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    const supabasePublishableKey =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!supabaseUrl || !supabasePublishableKey) {
       return NextResponse.json(
         { error: 'Configuração do Supabase em falta.' },
         { status: 500 }
       )
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const exists = await userExistsByEmail(normalEmail)
+
+    if (!exists) {
+      return NextResponse.json(
+        { error: 'Não existe nenhuma conta associada a este email.' },
+        { status: 404 }
+      )
+    }
+
+    const supabase = createClient(supabaseUrl, supabasePublishableKey)
 
     const { error } = await supabase.auth.resetPasswordForEmail(normalEmail, {
       redirectTo: `${siteUrl}/update-password`,
@@ -57,7 +111,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      message: 'Se o email existir, receberá instruções de recuperação.',
+      message: 'Email de recuperação enviado com sucesso.',
     })
   } catch (error) {
     console.error('Erro no backend de recuperação:', error)
