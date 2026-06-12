@@ -9,6 +9,9 @@ export interface ExtendedMaterial extends Material {
   status?: 'VISIBLE' | 'HIDDEN' | string
   user_id?: string // Identificador do proprietário do material
   category_id?: string // Garantir o ID original vindo da View
+  user_name?: string | null
+  discipline_name?: string | null
+  description?: string | null
 }
 
 export interface Category {

@@ -5,6 +5,9 @@ import FeedbackSection from '@/components/FeedbackSection'
 import MaterialsSection from '@/components/MaterialsSection'
 import ChatPanel from '@/components/ChatPanel'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function UnidadeCurricularPage({
   params
 }: {
@@ -23,10 +26,29 @@ export default async function UnidadeCurricularPage({
 
   if (error || !details) notFound()
 
-  const { data: materials } = await supabase
+   const { data: materials } = await supabase
     .from('vw_materials_detailed')
     .select('*')
     .eq('discipline_id', disciplineId)
+    .eq('status', 'VISIBLE')
+    .order('created_at', { ascending: false })
+   
+    const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  let favoriteIds: string[] = []
+
+  if (user) {
+    const { data: favorites, error: favoritesError } = await supabase
+      .from('material_favorites')
+      .select('material_id')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true })
+
+    favoriteIds = favorites?.map((favorite) => favorite.material_id) ?? []
+  }
+
 
   const { data: feedbacks } = await supabase
     .from('feedbacks')
@@ -72,7 +94,7 @@ export default async function UnidadeCurricularPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
           {/* Zona Central: Lista de Materiais com Pesquisa e Filtros */}
-          <MaterialsSection materials={materials ?? []} disciplineName={details.discipline_name} disciplineId={disciplineId} />
+          <MaterialsSection materials={materials ?? []} disciplineName={details.discipline_name} disciplineId={disciplineId} initialFavoriteIds={favoriteIds} />
 
           {/* Barra Lateral: Lista de Feedbacks e Comentários */}
           <aside className="lg:col-span-5">
