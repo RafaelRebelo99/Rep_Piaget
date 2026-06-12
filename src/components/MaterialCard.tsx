@@ -5,7 +5,6 @@ import { createClient } from '@/utils/supabase/client'
 import { formatBytes, formatDate } from '@/utils/formatter'
 import {
   FileText,
-  Download,
   ThumbsUp,
   FileSpreadsheet,
   Presentation,
@@ -234,9 +233,6 @@ export default function MaterialCard({ material, hideActions = false, actions }:
           </button>
         </div>
 
-        <button className="bg-gray-50 p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600">
-          <Download className="w-5 h-5" />
-        </button>
         {actions}
       </div>
     </div>
