@@ -14,7 +14,7 @@
     "@langchain/google-genai": "^2.1.31",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
-    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/typography": "^0.5.20",
     "langchain": "^1.4.4",
     "lucide-react": "^1.16.0",
     "mammoth": "^1.12.0",
