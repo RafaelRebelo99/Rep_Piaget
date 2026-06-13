@@ -32,6 +32,7 @@ export default defineConfig({
           { text: 'Integração de Email', link: '/resend' },
           { text: 'Sistema de Votação', link: '/votacao' },
           { text: 'Chatbot REP AI', link: '/chatbot' },
+          { text: 'Quiz de Materiais', link: '/quizzes' },
         ]
       }
     ],
