@@ -37,7 +37,7 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
   const { count: ficheirosPendentes } = await supabase
     .from('materials')
     .select('*', { count: 'exact', head: true })
-    .eq('status', 'pending')
+    .eq('status', 'HIDDEN')
 
   const stats: Stat[] = [
     {
