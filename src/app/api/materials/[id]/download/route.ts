@@ -18,7 +18,7 @@ export async function GET(req: Request, { params }: RouteContext) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Não autenticado.' },
+        { error: 'Para fazer o download do material, é necessário estar autenticado.' },
         { status: 401 }
       )
     }
