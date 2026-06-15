@@ -33,8 +33,8 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
     .from('materials')
     .select('*', { count: 'exact', head: true })
 
-  // Contagem de ficheiros pendentes
-  const { count: ficheirosPendentes } = await supabase
+  // Contagem de ficheiros ocultos
+  const { count: ficheirosOcultos } = await supabase
     .from('materials')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'HIDDEN')
@@ -63,10 +63,10 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
       ),
     },
     {
-      label: 'Ficheiros Pendentes',
-      value: (ficheirosPendentes ?? 0).toLocaleString('pt-PT'),
-      badge: ficheirosPendentes && ficheirosPendentes > 0 ? 'Crítico' : 'Normal',
-      badgeClass: ficheirosPendentes && ficheirosPendentes > 0
+      label: 'Ficheiros Ocultos',
+      value: (ficheirosOcultos ?? 0).toLocaleString('pt-PT'),
+      badge: ficheirosOcultos && ficheirosOcultos > 0 ? 'Crítico' : 'Normal',
+      badgeClass: ficheirosOcultos && ficheirosOcultos > 0
         ? 'text-red-700 bg-red-50'
         : 'text-green-700 bg-green-50',
       icon: (

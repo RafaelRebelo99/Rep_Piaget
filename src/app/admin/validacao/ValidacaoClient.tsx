@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { useGlobalError } from '@/utils/errorContext'
 
 interface SubmittedBy {
   id: string
@@ -16,6 +17,9 @@ interface Ficheiro {
   file_size: number
   created_at: string
   user_id: string
+  status: 'VISIBLE' | 'HIDDEN'
+  discipline_id: string
+  disciplineName: string
   submittedBy: SubmittedBy | null
   votes: { value: number }[]
 }
@@ -26,6 +30,11 @@ interface Props {
   totalHidden: number
   totalVisible: number
 }
+
+type LoadingAction = {
+  id: string
+  action: 'reset' | 'hide' | 'delete'
+} | null
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -60,7 +69,9 @@ function FileTypeIcon({ type }: { type: string }): React.JSX.Element {
     TXT:  { bg: 'bg-gray-100', text: 'text-gray-600'  },
     MD:   { bg: 'bg-gray-100', text: 'text-gray-600'  },
   }
+
   const colors = map[type.toUpperCase()] ?? { bg: 'bg-gray-100', text: 'text-gray-600' }
+
   return (
     <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${colors.bg} ${colors.text}`}>
       {type.toUpperCase().slice(0, 3)}
@@ -68,68 +79,141 @@ function FileTypeIcon({ type }: { type: string }): React.JSX.Element {
   )
 }
 
-export default function ValidacaoClient({ ficheiros: initial, adminId, totalHidden, totalVisible }: Props): React.JSX.Element {
+export default function ValidacaoClient({
+  ficheiros: initial,
+  adminId,
+  totalHidden,
+  totalVisible,
+}: Props): React.JSX.Element {
   const [ficheiros, setFicheiros] = useState<Ficheiro[]>(initial)
-  const [isPending, startTransition] = useTransition()
-  const [feedback, setFeedback] = useState<{ id: string; message: string } | null>(null)
+  const [selectedDiscipline, setSelectedDiscipline] = useState<string>('all')
+  const [loadingAction, setLoadingAction] = useState<LoadingAction>(null)
 
   const supabase = createClient()
+  const { showError } = useGlobalError()
+
+  const isLoading = loadingAction !== null
+
+  const disciplines = Array.from(new Set(ficheiros.map((f) => f.disciplineName))).sort()
+
+  const filteredFicheiros = selectedDiscipline === 'all'
+    ? ficheiros
+    : ficheiros.filter((f) => f.disciplineName === selectedDiscipline)
 
   function getVoteSum(votes: { value: number }[]): number {
     return votes.reduce((acc, v) => acc + v.value, 0)
   }
 
+  function isActionLoading(id: string, action: 'reset' | 'hide' | 'delete'): boolean {
+    return loadingAction?.id === id && loadingAction.action === action
+  }
+
   async function handleReset(ficheiro: Ficheiro): Promise<void> {
-    startTransition(async () => {
+    if (isLoading) return
+
+    setLoadingAction({ id: ficheiro.id, action: 'reset' })
+
+    try {
       const { error: votesError } = await supabase
         .from('votes')
         .delete()
         .eq('material_id', ficheiro.id)
 
-      if (votesError) return
+      if (votesError) throw votesError
 
       const { error: statusError } = await supabase
         .from('materials')
         .update({ status: 'VISIBLE' })
         .eq('id', ficheiro.id)
 
-      if (statusError) return
+      if (statusError) throw statusError
 
       const userName = ficheiro.submittedBy?.full_name ?? ficheiro.submittedBy?.email ?? 'Desconhecido'
-      await supabase.from('audit_logs').insert({
+
+      const { error: auditError } = await supabase.from('audit_logs').insert({
         admin_id: adminId,
-        action: `VOTOS RESETADOS: "${ficheiro.title}" submetido por ${userName} — ficheiro reposto como visível`,
+        action: `VOTOS RESETADOS: "${ficheiro.title}" submetido por ${userName} - ficheiro reposto como visivel`,
       })
 
-      setFicheiros((prev) => prev.filter((f) => f.id !== ficheiro.id))
-      setFeedback({ id: ficheiro.id, message: 'Votos resetados' })
-      setTimeout(() => setFeedback(null), 2500)
-    })
+      if (auditError) throw auditError
+
+      setFicheiros((prev) => prev.map((f) => (
+        f.id === ficheiro.id ? { ...f, status: 'VISIBLE', votes: [] } : f
+      )))
+    } catch (error) {
+      console.error('Erro ao repor ficheiro:', error)
+      showError('Nao foi possivel repor este ficheiro.', 'Erro ao repor')
+    } finally {
+      setLoadingAction(null)
+    }
+  }
+
+  async function handleHide(ficheiro: Ficheiro): Promise<void> {
+    if (isLoading) return
+
+    setLoadingAction({ id: ficheiro.id, action: 'hide' })
+
+    try {
+      const { error } = await supabase
+        .from('materials')
+        .update({ status: 'HIDDEN' })
+        .eq('id', ficheiro.id)
+
+      if (error) throw error
+
+      const userName = ficheiro.submittedBy?.full_name ?? ficheiro.submittedBy?.email ?? 'Desconhecido'
+
+      const { error: auditError } = await supabase.from('audit_logs').insert({
+        admin_id: adminId,
+        action: `FICHEIRO OCULTADO: "${ficheiro.title}" submetido por ${userName}`,
+      })
+
+      if (auditError) throw auditError
+
+      setFicheiros((prev) => prev.map((f) => (
+        f.id === ficheiro.id ? { ...f, status: 'HIDDEN' } : f
+      )))
+    } catch (error) {
+      console.error('Erro ao ocultar ficheiro:', error)
+      showError('Nao foi possivel ocultar este ficheiro.', 'Erro ao ocultar')
+    } finally {
+      setLoadingAction(null)
+    }
   }
 
   async function handleDelete(ficheiro: Ficheiro): Promise<void> {
-    startTransition(async () => {
+    if (isLoading) return
+
+    setLoadingAction({ id: ficheiro.id, action: 'delete' })
+
+    try {
       const { error } = await supabase
         .from('materials')
         .delete()
         .eq('id', ficheiro.id)
 
-      if (error) return
+      if (error) throw error
 
       const userName = ficheiro.submittedBy?.full_name ?? ficheiro.submittedBy?.email ?? 'Desconhecido'
-      await supabase.from('audit_logs').insert({
+
+      const { error: auditError } = await supabase.from('audit_logs').insert({
         admin_id: adminId,
         action: `FICHEIRO ELIMINADO: "${ficheiro.title}" submetido por ${userName}`,
       })
 
+      if (auditError) throw auditError
+
       setFicheiros((prev) => prev.filter((f) => f.id !== ficheiro.id))
-    })
+    } catch (error) {
+      console.error('Erro ao eliminar ficheiro:', error)
+      showError('Nao foi possivel eliminar este ficheiro.', 'Erro ao eliminar')
+    } finally {
+      setLoadingAction(null)
+    }
   }
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-
-      {/* Header */}
       <div className="mb-8">
         <p className="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-1">
           Gestão de Conteúdo
@@ -137,11 +221,10 @@ export default function ValidacaoClient({ ficheiros: initial, adminId, totalHidd
         <h1 className="text-2xl font-bold text-gray-900">Validação de Ficheiros</h1>
       </div>
 
-      {/* Cards de resumo */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-xl border border-gray-100 p-6">
           <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">Ficheiros Ocultos</p>
-          <p className="text-3xl font-bold text-amber-700">{ficheiros.length}</p>
+          <p className="text-3xl font-bold text-amber-700">{totalHidden}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 p-6">
           <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-2">Ficheiros Visíveis</p>
@@ -153,7 +236,24 @@ export default function ValidacaoClient({ ficheiros: initial, adminId, totalHidd
         </div>
       </div>
 
-      {/* Tabela */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <label htmlFor="discipline-filter" className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+          Disciplina
+        </label>
+        <select
+          id="discipline-filter"
+          value={selectedDiscipline}
+          onChange={(e) => setSelectedDiscipline(e.target.value)}
+          disabled={isLoading}
+          className="min-w-56 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-gray-300 disabled:opacity-50"
+        >
+          <option value="all">Todas as disciplinas</option>
+          {disciplines.map((discipline) => (
+            <option key={discipline} value={discipline}>{discipline}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <table className="w-full border-collapse">
           <thead>
@@ -164,33 +264,32 @@ export default function ValidacaoClient({ ficheiros: initial, adminId, totalHidd
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Ações</th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-50">
-            {ficheiros.length === 0 ? (
+            {filteredFicheiros.length === 0 ? (
               <tr>
                 <td colSpan={4} className="text-center py-12 text-sm text-gray-400">
-                  Nenhum ficheiro oculto de momento.
+                  Nenhum ficheiro encontrado com os filtros aplicados.
                 </td>
               </tr>
             ) : (
-              ficheiros.map((f) => {
+              filteredFicheiros.map((f) => {
                 const { bg, text } = getAvatarColor(f.id)
                 const voteSum = getVoteSum(f.votes)
-                const userName = f.submittedBy?.full_name ?? f.submittedBy?.email ?? '—'
+                const userName = f.submittedBy?.full_name ?? f.submittedBy?.email ?? '-'
+
                 return (
                   <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
-
-                    {/* Ficheiro */}
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <FileTypeIcon type={f.file_type} />
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-800 truncate">{f.title}</p>
-                          <p className="text-xs text-gray-400">{formatBytes(f.file_size)}</p>
+                          <p className="text-xs text-gray-400">{formatBytes(f.file_size)} - {f.disciplineName}</p>
                         </div>
                       </div>
                     </td>
 
-                    {/* Utilizador */}
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${bg} ${text}`}>
@@ -200,7 +299,6 @@ export default function ValidacaoClient({ ficheiros: initial, adminId, totalHidd
                       </div>
                     </td>
 
-                    {/* Votos */}
                     <td className="px-5 py-3.5">
                       <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-50 text-red-700">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -210,31 +308,35 @@ export default function ValidacaoClient({ ficheiros: initial, adminId, totalHidd
                       </span>
                     </td>
 
-                    {/* Ações */}
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleReset(f)}
-                          disabled={isPending}
-                          title="Resetar votos e repor ficheiro"
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Repor
-                        </button>
+                        {f.status === 'HIDDEN' ? (
+                          <button
+                            onClick={() => handleReset(f)}
+                            disabled={isLoading}
+                            title="Resetar votos e repor ficheiro"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50"
+                          >
+                            {isActionLoading(f.id, 'reset') ? 'A repor...' : 'Repor'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleHide(f)}
+                            disabled={isLoading}
+                            title="Ocultar ficheiro"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                          >
+                            {isActionLoading(f.id, 'hide') ? 'A ocultar...' : 'Ocultar'}
+                          </button>
+                        )}
 
                         <button
                           onClick={() => handleDelete(f)}
-                          disabled={isPending}
+                          disabled={isLoading}
                           title="Eliminar ficheiro permanentemente"
                           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Eliminar
+                          {isActionLoading(f.id, 'delete') ? 'A eliminar...' : 'Eliminar'}
                         </button>
                       </div>
                     </td>

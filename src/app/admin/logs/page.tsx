@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
@@ -14,8 +15,19 @@ interface AuditLog {
 
 const ITEMS_PER_PAGE = 50
 
-export default async function LogsPage(): Promise<React.JSX.Element> {
+interface Props {
+  searchParams: Promise<{
+    page?: string
+  }>
+}
+
+export default async function LogsPage({ searchParams }: Props): Promise<React.JSX.Element> {
   const supabase = await createClient()
+  const params = await searchParams
+
+  const currentPage = Math.max(Number(params.page ?? '1') || 1, 1)
+  const from = (currentPage - 1) * ITEMS_PER_PAGE
+  const to = from + ITEMS_PER_PAGE - 1
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -28,11 +40,20 @@ export default async function LogsPage(): Promise<React.JSX.Element> {
 
   if (profile?.role !== 'ADMIN') redirect('/')
 
-  const { data: logs } = await supabase
+  const { data: logs, count } = await supabase
     .from('audit_logs')
-    .select('id, admin_id, action, created_at, profiles(full_name, email)')
+    .select('id, admin_id, action, created_at, profiles(full_name, email)', {
+      count: 'exact',
+    })
     .order('created_at', { ascending: false })
-    .limit(ITEMS_PER_PAGE)
+    .range(from, to)
+
+  const totalLogs = count ?? 0
+  const totalPages = Math.max(Math.ceil(totalLogs / ITEMS_PER_PAGE), 1)
+
+  if (currentPage > totalPages && totalLogs > 0) {
+    redirect(`/admin/logs?page=${totalPages}`)
+  }
 
   function formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleString('pt-PT', {
@@ -46,18 +67,22 @@ export default async function LogsPage(): Promise<React.JSX.Element> {
   }
 
   function getActionColor(action: string): string {
-    if (action.includes('BANIDO') || action.includes('REMOVIDO')) return 'text-red-500'
-    if (action.includes('SUSPENSO')) return 'text-amber-500'
+    if (action.includes('BANIDO') || action.includes('REMOVIDO') || action.includes('ELIMINADO')) return 'text-red-500'
+    if (action.includes('SUSPENSO') || action.includes('OCULTADO')) return 'text-amber-500'
     if (action.includes('ADMIN')) return 'text-blue-500'
-    if (action.includes('UPLOAD')) return 'text-green-500'
+    if (action.includes('UPLOAD') || action.includes('RESETADOS')) return 'text-green-500'
     return 'text-gray-400'
   }
 
   function getActionLevel(action: string): string {
-    if (action.includes('BANIDO') || action.includes('REMOVIDO')) return 'ERROR'
-    if (action.includes('SUSPENSO')) return 'WARN'
-    if (action.includes('ADMIN') || action.includes('UPLOAD')) return 'INFO'
+    if (action.includes('BANIDO') || action.includes('REMOVIDO') || action.includes('ELIMINADO')) return 'ERROR'
+    if (action.includes('SUSPENSO') || action.includes('OCULTADO')) return 'WARN'
+    if (action.includes('ADMIN') || action.includes('UPLOAD') || action.includes('RESETADOS')) return 'INFO'
     return 'INFO'
+  }
+
+  function getPageHref(page: number): string {
+    return `/admin/logs?page=${page}`
   }
 
   return (
@@ -82,10 +107,12 @@ export default async function LogsPage(): Promise<React.JSX.Element> {
               <div className="w-3 h-3 rounded-full bg-amber-500" />
               <div className="w-3 h-3 rounded-full bg-green-500" />
             </div>
-            <span className="text-xs text-gray-400 font-mono">audit_logs — últimas {ITEMS_PER_PAGE} entradas</span>
+            <span className="text-xs text-gray-400 font-mono">
+              audit_logs - pagina {currentPage} de {totalPages}
+            </span>
           </div>
           <span className="text-xs text-gray-500 font-mono">
-            {logs?.length ?? 0} registos
+            {totalLogs} registos
           </span>
         </div>
 
@@ -98,6 +125,7 @@ export default async function LogsPage(): Promise<React.JSX.Element> {
               const level = getActionLevel(log.action)
               const color = getActionColor(log.action)
               const adminName = log.profiles?.full_name ?? log.profiles?.email ?? log.admin_id
+
               return (
                 <div key={log.id} className="flex gap-3 leading-relaxed">
                   <span className="text-gray-600 shrink-0">[{formatDate(log.created_at)}]</span>
@@ -108,7 +136,7 @@ export default async function LogsPage(): Promise<React.JSX.Element> {
                   }`}>{level}:</span>
                   <span className="text-gray-400">
                     <span className="text-white">{adminName}</span>
-                    {' → '}
+                    {' -> '}
                     <span className={color}>{log.action}</span>
                   </span>
                 </div>
@@ -118,10 +146,45 @@ export default async function LogsPage(): Promise<React.JSX.Element> {
         </div>
       </div>
 
-      {logs && logs.length === ITEMS_PER_PAGE && (
-        <p className="text-xs text-gray-400 mt-3 text-right">
-          A mostrar as últimas {ITEMS_PER_PAGE} entradas.
-        </p>
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-gray-400">
+            A mostrar {from + 1}-{Math.min(to + 1, totalLogs)} de {totalLogs} entradas.
+          </p>
+
+          <div className="flex items-center gap-2">
+            {currentPage > 1 ? (
+              <Link
+                href={getPageHref(currentPage - 1)}
+                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Anterior
+              </Link>
+            ) : (
+              <span className="px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-xs font-medium text-gray-300">
+                Anterior
+              </span>
+            )}
+
+            <span className="px-3 py-1.5 text-xs font-semibold text-gray-500">
+              {currentPage} / {totalPages}
+            </span>
+
+            {currentPage < totalPages ? (
+              <Link
+                href={getPageHref(currentPage + 1)}
+                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Seguinte
+              </Link>
+            ) : (
+              <span className="px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-xs font-medium text-gray-300">
+                Seguinte
+              </span>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )
