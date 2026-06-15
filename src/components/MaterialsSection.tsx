@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Bot, PlusCircle, Edit2, Trash2, AlertCircle, Download, Star } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
+import { Bot, PlusCircle, Edit2, Trash2, AlertCircle } from 'lucide-react'
 import { useMaterials, ExtendedMaterial, Category } from '@/utils/useMaterials'
 import { useGlobalError } from '@/utils/errorContext'
 import MaterialCard from './MaterialCard'
 import SearchBar from './SearchBarDiscipline'
 import UploadModal from './UploadModal'
+import { createClient } from '@/utils/supabase/client'
 
 // Interface
 interface MaterialsSectionProps {
@@ -26,36 +26,37 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [visibleCount, setVisibleCount] = useState<number>(10)
   const [modalOpen, setModalOpen] = useState(false)
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(
-  () => new Set(initialFavoriteIds)
-  )
-  const [favoriteOrder, setFavoriteOrder] = useState<Map<string, number>>(
-  () => new Map(initialFavoriteIds.map((id, index) => [id, index]))
-  )
-
+  
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set(initialFavoriteIds))
+  const [favoriteOrder, setFavoriteOrder] = useState<Map<string, number>>(() => new Map(initialFavoriteIds.map((id, index) => [id, index])))
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
+  // Extração de Categorias
+  const filterCategories = ['all', ...Array.from(new Set(materials.map(m => m.category_name)))]
 
+  const filteredMaterials = materials.filter((mat) => {
+    if (mat.status === 'HIDDEN') return false
 
-  async function downloadMaterial(materialId: string) {
-    setDownloadingId(materialId)
+    const matchesCategory = selectedCategory === 'all' || mat.category_name === selectedCategory
+    const matchesSearch = mat.title.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
+  
+  .sort((a, b) => {
+    const aIsFavorite = favoriteIds.has(a.material_id)
+    const bIsFavorite = favoriteIds.has(b.material_id)
 
-    try {
-      const res = await fetch(`/api/materials/${materialId}/download`)
-      const data = await res.json().catch(() => null)
-
-      if (!res.ok) {
-        throw new Error(data?.error || 'Não foi possível fazer download.')
-      }
-
-      window.open(data.downloadUrl, '_blank')
-    } catch (error) {
-      console.error('Erro no download:', error)
-      alert(error instanceof Error ? error.message : 'Não foi possível fazer download.')
-    } finally {
-      setDownloadingId(null)
+    if (aIsFavorite && bIsFavorite) {
+      return (
+        (favoriteOrder.get(a.material_id) ?? Number.MAX_SAFE_INTEGER) -
+        (favoriteOrder.get(b.material_id) ?? Number.MAX_SAFE_INTEGER)
+      )
     }
-  }
+
+    if (aIsFavorite) return -1
+    if (bIsFavorite) return 1
+    return 0
+  })
 
   async function toggleFavorite(materialId: string) {
   const supabase = createClient()
@@ -84,17 +85,18 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
 
     return next
   })
+
   setFavoriteOrder((current) => {
-  const next = new Map(current)
+    const next = new Map(current)
 
-  if (isFavorite) {
-    next.delete(materialId)
-  } else if (!next.has(materialId)) {
-    next.set(materialId, next.size)
-  }
+    if (isFavorite) {
+      next.delete(materialId)
+    } else if (!next.has(materialId)) {
+      next.set(materialId, next.size)
+    }
 
-  return next
-})
+    return next
+  })
 
   const { error } = isFavorite
     ? await supabase
@@ -103,17 +105,11 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
         .eq('user_id', userId)
         .eq('material_id', materialId)
     : await supabase
-        .from('material_favorites')
-        .upsert(
-          {
-            user_id: userId,
-            material_id: materialId,
-          },
-          {
-            onConflict: 'user_id,material_id',
-            ignoreDuplicates: true,
-          }
-        )
+    .from('material_favorites')
+    .insert({
+      user_id: userId,
+      material_id: materialId,
+    })
 
   if (error) {
     console.error('Erro ao atualizar favorito:', error)
@@ -133,32 +129,32 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
     alert('Não foi possível atualizar os favoritos.')
   }
 }
-  // Extração de Categorias
-  const filterCategories = ['all', ...Array.from(new Set(materials.map(m => m.category_name)))]
 
-  const filteredMaterials = materials.filter((mat) => {
-    if (mat.status === 'HIDDEN') return false
+  async function downloadMaterial(materialId: string) {
+    const downloadWindow = window.open('', '_blank')
+    setDownloadingId(materialId)
 
-    const matchesCategory = selectedCategory === 'all' || mat.category_name === selectedCategory
-    const matchesSearch = mat.title.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
-  .sort((a, b) => {
-    const aIsFavorite = favoriteIds.has(a.material_id)
-    const bIsFavorite = favoriteIds.has(b.material_id)
+  try {
+    const res = await fetch(`/api/materials/${materialId}/download`)
+    const data = await res.json().catch(() => null)
 
-    if (aIsFavorite && bIsFavorite) {
-      return (
-        (favoriteOrder.get(a.material_id) ?? Number.MAX_SAFE_INTEGER) -
-        (favoriteOrder.get(b.material_id) ?? Number.MAX_SAFE_INTEGER)
-      )
+    if (!res.ok) {
+      throw new Error(data?.error || 'Não foi possível fazer download.')
     }
+    if (downloadWindow) {
+      downloadWindow.location.href = data.downloadUrl
+    } else {
+      window.location.href = data.downloadUrl
+    }
+  } catch (error) {
+    downloadWindow?.close()
+    console.error('Erro no download:', error)
+    alert(error instanceof Error ? error.message : 'Não foi possível fazer download.')
+  } finally {
+    setDownloadingId(null)
+  }
+}
 
-    if (aIsFavorite) return -1
-    if (bIsFavorite) return 1
-    return 0
-    
-  })
   return (
     <section className="lg:col-span-7">
 
@@ -197,7 +193,7 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
             <button
               key={category}
               onClick={() => {
-                setSelectedCategory(category ?? '')
+                setSelectedCategory(category)
                 setVisibleCount(10)
               }}
               className={`px-4 py-1.5 rounded-full text-xs font-bold capitalize transition-all ${
@@ -269,18 +265,16 @@ interface EditableWrapperProps {
   onUpdate: (id: string, title: string, categoryId: string) => Promise<void>
   isFavorite: boolean
   isDownloading: boolean
-  onDownload: (id: string) => Promise<void>
   onToggleFavorite: (id: string) => Promise<void>
+  onDownload: (id: string) => Promise<void>
 }
 
-function EditableMaterialWrapper({ mat, currentUserId, allSystemCategories, isParentLoading, onDelete, onUpdate, isFavorite, isDownloading, onDownload, onToggleFavorite }: EditableWrapperProps) {
+function EditableMaterialWrapper({ mat, currentUserId, allSystemCategories, isParentLoading, onDelete, onUpdate, isFavorite, isDownloading, onToggleFavorite, onDownload }: EditableWrapperProps) {
   const { showError } = useGlobalError()
   const [isEditing, setIsEditing] = useState(false)
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
-  
-  // Garantir valores string para campos controlados do formulário
-  const [editTitle, setEditTitle] = useState<string>(mat.title ?? '')
-  const [editCategoryId, setEditCategoryId] = useState<string>(mat.category_id ?? '')
+  const [editTitle, setEditTitle] = useState(mat.title)
+  const [editCategoryId, setEditCategoryId] = useState(mat.category_id || '')
   const [isUpdating, setIsUpdating] = useState(false)
 
   const inputInputRef = useRef<HTMLInputElement>(null)
@@ -288,9 +282,8 @@ function EditableMaterialWrapper({ mat, currentUserId, allSystemCategories, isPa
 
   useEffect(() => {
     if (isEditing) {
-      // Garantir fallback seguro para campos opcionais vindos da View
-    setEditTitle(mat.title ?? '')
-    setEditCategoryId(mat.category_id ?? allSystemCategories[0]?.id ?? '')
+      setEditTitle(mat.title)
+      setEditCategoryId(mat.category_id || allSystemCategories[0]?.id || '')
       
       setTimeout(() => {
         inputInputRef.current?.focus()
@@ -324,7 +317,7 @@ function EditableMaterialWrapper({ mat, currentUserId, allSystemCategories, isPa
     } finally {
       setIsUpdating(false)
     }
-  } 
+  }
 
   return (
     <div className="w-full">
@@ -435,44 +428,14 @@ function EditableMaterialWrapper({ mat, currentUserId, allSystemCategories, isPa
             </div>
           )}
           <div className={`flex-1 min-w-0 [&>div]:border-none ${isOwner ? '[&>div]:rounded-l-none' : ''}`}>
-            <MaterialCard material={mat} hideActions={isParentLoading} />
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-4 py-3 text-xs">
-              <div className="flex flex-wrap gap-3 text-gray-500">
-                <span>Autor: {mat.user_name || 'Desconhecido'}</span>
-                <span>Disciplina: {mat.discipline_name || 'Sem disciplina'}</span>
-                <span>
-                  Data:{' '}
-                  {mat.created_at
-                    ? new Date(mat.created_at).toLocaleDateString('pt-PT')
-                    : 'Sem data'}
-                </span>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => onToggleFavorite(mat.material_id)}
-                  className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 font-bold transition-colors ${
-                    isFavorite
-                      ? 'border-yellow-300 bg-yellow-50 text-yellow-700'
-                      : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  <Star className={`h-3.5 w-3.5 ${isFavorite ? 'fill-current' : ''}`} />
-                  Favorito
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onDownload(mat.material_id)}
-                  disabled={isDownloading}
-                  className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 font-bold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  {isDownloading ? 'A preparar...' : 'Download'}
-                </button>
-              </div>
-            </div>
+            <MaterialCard
+              material={mat}
+              hideActions={isParentLoading}
+              isFavorite={isFavorite}
+              isDownloading={isDownloading}
+              onToggleFavorite={() => onToggleFavorite(mat.material_id)}
+              onDownload={() => onDownload(mat.material_id)}
+          />
           </div>
         </div>
       )}
