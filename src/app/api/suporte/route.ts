@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -9,7 +10,7 @@ export async function POST(req: Request) {
   try {
     await resend.emails.send({
       from: "Suporte <onboarding@resend.dev>",
-      to: "rep_suporte@outlook.pt", // 
+      to: "rep_suporte@outlook.pt",
       subject: `[Suporte] ${assunto}`,
       html: `
         <h2>Novo pedido de suporte</h2>
@@ -20,6 +21,18 @@ export async function POST(req: Request) {
         <p>${descricao}</p>
       `,
     });
+
+    // Regista log apenas após envio bem-sucedido
+    try {
+      const supabase = await createClient();
+      await supabase.from("audit_logs").insert({
+        admin_id: null,
+        action: `SUPORTE: Pedido enviado por ${nome} (${email}) — Assunto: "${assunto}"`,
+      });
+    } catch (logError) {
+      // Não bloqueia a resposta se o log falhar
+      console.error("Erro ao registar log de suporte:", logError);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

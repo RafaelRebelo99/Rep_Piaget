@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 
 interface AuditLog {
   id: string
-  admin_id: string
+  admin_id: string | null
   action: string
   created_at: string
   profiles: {
@@ -69,6 +69,7 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
   function getActionColor(action: string): string {
     if (action.includes('BANIDO') || action.includes('REMOVIDO') || action.includes('ELIMINADO')) return 'text-red-400'
     if (action.includes('SUSPENSO') || action.includes('OCULTADO')) return 'text-amber-400'
+    if (action.includes('SUPORTE')) return 'text-purple-400'
     if (action.includes('ADMIN')) return 'text-blue-400'
     if (action.includes('UPLOAD') || action.includes('RESETADOS')) return 'text-green-400'
     return 'text-gray-400'
@@ -78,6 +79,7 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
     if (action.includes('BANIDO') || action.includes('REMOVIDO') || action.includes('ELIMINADO')) return 'ERROR'
     if (action.includes('SUSPENSO') || action.includes('OCULTADO')) return 'WARN'
     if (action.includes('ADMIN') || action.includes('UPLOAD') || action.includes('RESETADOS')) return 'INFO'
+    if (action.includes('SUPORTE')) return 'INFO'
     return 'INFO'
   }
 
@@ -124,7 +126,11 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
             (logs as unknown as AuditLog[]).map((log) => {
               const level = getActionLevel(log.action)
               const color = getActionColor(log.action)
-              const adminName = log.profiles?.full_name ?? log.profiles?.email ?? log.admin_id
+
+              // admin_id null = pedido de suporte (utilizador não autenticado)
+              const adminName = log.admin_id === null
+                ? 'sistema'
+                : (log.profiles?.full_name ?? log.profiles?.email ?? log.admin_id)
 
               return (
                 <div key={log.id} className="flex flex-col sm:flex-row sm:gap-3 leading-relaxed gap-0.5">
@@ -141,7 +147,9 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
                       {level}:
                     </span>
                     <span className="text-gray-400 break-all">
-                      <span className="text-white">{adminName}</span>
+                      <span className={log.admin_id === null ? 'text-purple-300' : 'text-white'}>
+                        {adminName}
+                      </span>
                       {' -> '}
                       <span className={color}>{log.action}</span>
                     </span>
