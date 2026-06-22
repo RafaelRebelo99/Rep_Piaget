@@ -67,10 +67,10 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
   }
 
   function getActionColor(action: string): string {
-    if (action.includes('BANIDO') || action.includes('REMOVIDO') || action.includes('ELIMINADO')) return 'text-red-500'
-    if (action.includes('SUSPENSO') || action.includes('OCULTADO')) return 'text-amber-500'
-    if (action.includes('ADMIN')) return 'text-blue-500'
-    if (action.includes('UPLOAD') || action.includes('RESETADOS')) return 'text-green-500'
+    if (action.includes('BANIDO') || action.includes('REMOVIDO') || action.includes('ELIMINADO')) return 'text-red-400'
+    if (action.includes('SUSPENSO') || action.includes('OCULTADO')) return 'text-amber-400'
+    if (action.includes('ADMIN')) return 'text-blue-400'
+    if (action.includes('UPLOAD') || action.includes('RESETADOS')) return 'text-green-400'
     return 'text-gray-400'
   }
 
@@ -86,7 +86,7 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
+    <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
 
       {/* Header */}
       <div className="mb-8">
@@ -100,24 +100,24 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
       <div className="bg-gray-900 rounded-xl overflow-hidden">
 
         {/* Terminal header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1.5">
+        <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-gray-700">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex gap-1.5 shrink-0">
               <div className="w-3 h-3 rounded-full bg-red-500" />
               <div className="w-3 h-3 rounded-full bg-amber-500" />
               <div className="w-3 h-3 rounded-full bg-green-500" />
             </div>
-            <span className="text-xs text-gray-400 font-mono">
-              audit_logs - pagina {currentPage} de {totalPages}
+            <span className="text-xs text-gray-400 font-mono truncate">
+              audit_logs — pág. {currentPage}/{totalPages}
             </span>
           </div>
-          <span className="text-xs text-gray-500 font-mono">
+          <span className="text-xs text-gray-500 font-mono shrink-0 ml-3">
             {totalLogs} registos
           </span>
         </div>
 
         {/* Log entries */}
-        <div className="px-6 py-5 font-mono text-xs flex flex-col gap-2 max-h-[600px] overflow-y-auto">
+        <div className="px-4 md:px-6 py-5 font-mono text-xs flex flex-col gap-2 max-h-[600px] overflow-y-auto">
           {!logs || logs.length === 0 ? (
             <p className="text-gray-500">Nenhum log registado ainda.</p>
           ) : (
@@ -127,17 +127,24 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
               const adminName = log.profiles?.full_name ?? log.profiles?.email ?? log.admin_id
 
               return (
-                <div key={log.id} className="flex gap-3 leading-relaxed">
+                <div key={log.id} className="flex flex-col sm:flex-row sm:gap-3 leading-relaxed gap-0.5">
+                  {/* Data — linha própria em mobile */}
                   <span className="text-gray-600 shrink-0">[{formatDate(log.created_at)}]</span>
-                  <span className={`shrink-0 font-semibold ${
-                    level === 'ERROR' ? 'text-red-400' :
-                    level === 'WARN' ? 'text-amber-400' :
-                    'text-green-400'
-                  }`}>{level}:</span>
-                  <span className="text-gray-400">
-                    <span className="text-white">{adminName}</span>
-                    {' -> '}
-                    <span className={color}>{log.action}</span>
+
+                  {/* Nível + conteúdo */}
+                  <span className="flex gap-2 flex-wrap">
+                    <span className={`shrink-0 font-semibold ${
+                      level === 'ERROR' ? 'text-red-400' :
+                      level === 'WARN'  ? 'text-amber-400' :
+                      'text-green-400'
+                    }`}>
+                      {level}:
+                    </span>
+                    <span className="text-gray-400 break-all">
+                      <span className="text-white">{adminName}</span>
+                      {' -> '}
+                      <span className={color}>{log.action}</span>
+                    </span>
                   </span>
                 </div>
               )
@@ -148,9 +155,9 @@ export default async function LogsPage({ searchParams }: Props): Promise<React.J
 
       {/* Paginação */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
           <p className="text-xs text-gray-400">
-            A mostrar {from + 1}-{Math.min(to + 1, totalLogs)} de {totalLogs} entradas.
+            A mostrar {from + 1}–{Math.min(to + 1, totalLogs)} de {totalLogs} entradas.
           </p>
 
           <div className="flex items-center gap-2">

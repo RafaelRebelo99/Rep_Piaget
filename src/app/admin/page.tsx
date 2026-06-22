@@ -78,7 +78,7 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
   ]
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
+    <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
 
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
@@ -91,7 +91,7 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
         {stats.map(({ label, value, badge, badgeClass, icon }: Stat) => (
           <div
             key={label}

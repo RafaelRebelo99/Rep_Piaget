@@ -143,7 +143,7 @@ export default function UtilizadoresClient({ utilizadores: initial, adminId }: P
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
+    <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
 
       {/* Header */}
       <div className="mb-8">
@@ -153,8 +153,8 @@ export default function UtilizadoresClient({ utilizadores: initial, adminId }: P
         <h1 className="text-2xl font-bold text-gray-900">Utilizadores</h1>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-6">
+      {/* Toolbar — coluna em mobile, linha em sm+ */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mb-6">
         <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10">
           <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
@@ -168,147 +168,158 @@ export default function UtilizadoresClient({ utilizadores: initial, adminId }: P
           />
         </div>
 
-        <select
-          value={filterRole}
-          onChange={(e) => { setFilterRole(e.target.value as Role | 'ALL'); setPage(1) }}
-          className="h-10 px-3 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 outline-none cursor-pointer"
-        >
-          <option value="ALL">Todos os papéis</option>
-          <option value="ADMIN">Admin</option>
-          <option value="USER">Utilizador</option>
-        </select>
+        {/* Selects lado a lado em mobile */}
+        <div className="flex gap-2">
+          <select
+            value={filterRole}
+            onChange={(e) => { setFilterRole(e.target.value as Role | 'ALL'); setPage(1) }}
+            className="flex-1 h-10 px-3 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 outline-none cursor-pointer"
+          >
+            <option value="ALL">Todos os papéis</option>
+            <option value="ADMIN">Admin</option>
+            <option value="USER">Utilizador</option>
+          </select>
 
-        <select
-          value={filterStatus}
-          onChange={(e) => { setFilterStatus(e.target.value as Status | 'ALL'); setPage(1) }}
-          className="h-10 px-3 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 outline-none cursor-pointer"
-        >
-          <option value="ALL">Todos os estados</option>
-          <option value="ACTIVE">Ativo</option>
-          <option value="SUSPENDED">Suspenso</option>
-          <option value="BANNED">Banido</option>
-        </select>
+          <select
+            value={filterStatus}
+            onChange={(e) => { setFilterStatus(e.target.value as Status | 'ALL'); setPage(1) }}
+            className="flex-1 h-10 px-3 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 outline-none cursor-pointer"
+          >
+            <option value="ALL">Todos os estados</option>
+            <option value="ACTIVE">Ativo</option>
+            <option value="SUSPENDED">Suspenso</option>
+            <option value="BANNED">Banido</option>
+          </select>
+        </div>
       </div>
 
-      {/* Table */}
+      {/* Table com scroll horizontal em mobile */}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-gray-100">
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Utilizador</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Papel</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Estado</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {paginated.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="text-center py-12 text-sm text-gray-400">
-                  Nenhum utilizador encontrado.
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse min-w-[600px]">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Utilizador</th>
+                <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Papel</th>
+                <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Estado</th>
+                <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wide px-5 py-3">Ações</th>
               </tr>
-            ) : (
-              paginated.map((u) => {
-                const { bg, text } = getAvatarColor(u.id)
-                const isFeedback = feedback?.id === u.id
-                return (
-                  <tr key={u.id} className={`transition-colors ${isFeedback ? 'bg-green-50/40' : 'hover:bg-gray-50/50'}`}>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {paginated.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="text-center py-12 text-sm text-gray-400">
+                    Nenhum utilizador encontrado.
+                  </td>
+                </tr>
+              ) : (
+                paginated.map((u) => {
+                  const { bg, text } = getAvatarColor(u.id)
+                  const isFeedback = feedback?.id === u.id
+                  return (
+                    <tr key={u.id} className={`transition-colors ${isFeedback ? 'bg-green-50/40' : 'hover:bg-gray-50/50'}`}>
 
-                    {/* Utilizador */}
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${bg} ${text}`}>
-                          {getInitials(u.full_name)}
+                      {/* Utilizador */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${bg} ${text}`}>
+                            {getInitials(u.full_name)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-800 truncate">{u.full_name ?? '—'}</p>
+                            <p className="text-xs text-gray-400 truncate">{u.email ?? '—'}</p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-800 truncate">{u.full_name ?? '—'}</p>
-                          <p className="text-xs text-gray-400 truncate">{u.email ?? '—'}</p>
+                      </td>
+
+                      {/* Papel */}
+                      <td className="px-5 py-3.5">
+                        <RoleBadge role={u.role} />
+                      </td>
+
+                      {/* Estado */}
+                      <td className="px-5 py-3.5">
+                        {isFeedback ? (
+                          <span className="text-xs text-green-700 font-medium">{feedback.message}</span>
+                        ) : (
+                          <StatusBadge status={u.status} />
+                        )}
+                      </td>
+
+                      {/* Ações — texto oculto em mobile, só ícone */}
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1.5">
+
+                          {/* Promover / Remover Admin */}
+                          <button
+                            onClick={() => handlePromote(u)}
+                            disabled={isPending}
+                            title={u.role === 'ADMIN' ? 'Remover Admin' : 'Promover a Admin'}
+                            className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors disabled:opacity-50 ${
+                              u.role === 'ADMIN'
+                                ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                            }`}
+                          >
+                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3l7 4 7-4M5 3v10l7 4 7-4V3" />
+                            </svg>
+                            <span className="hidden sm:inline">
+                              {u.role === 'ADMIN' ? 'Remover Admin' : 'Promover'}
+                            </span>
+                          </button>
+
+                          {/* Suspender */}
+                          <button
+                            onClick={() => handleSuspend(u)}
+                            disabled={isPending}
+                            title={u.status === 'SUSPENDED' ? 'Remover suspensão' : 'Suspender'}
+                            className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors disabled:opacity-50 ${
+                              u.status === 'SUSPENDED'
+                                ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                            }`}
+                          >
+                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="hidden sm:inline">
+                              {u.status === 'SUSPENDED' ? 'Remover Suspensão' : 'Suspender'}
+                            </span>
+                          </button>
+
+                          {/* Banir */}
+                          <button
+                            onClick={() => handleBan(u)}
+                            disabled={isPending}
+                            title={u.status === 'BANNED' ? 'Remover ban' : 'Banir'}
+                            className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors disabled:opacity-50 ${
+                              u.status === 'BANNED'
+                                ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                            }`}
+                          >
+                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                            <span className="hidden sm:inline">
+                              {u.status === 'BANNED' ? 'Remover Ban' : 'Banir'}
+                            </span>
+                          </button>
+
                         </div>
-                      </div>
-                    </td>
-
-                    {/* Papel */}
-                    <td className="px-5 py-3.5">
-                      <RoleBadge role={u.role} />
-                    </td>
-
-                    {/* Estado */}
-                    <td className="px-5 py-3.5">
-                      {isFeedback ? (
-                        <span className="text-xs text-green-700 font-medium">{feedback.message}</span>
-                      ) : (
-                        <StatusBadge status={u.status} />
-                      )}
-                    </td>
-
-                    {/* Ações */}
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2">
-
-                        {/* Promover / Remover Admin */}
-                        <button
-                          onClick={() => handlePromote(u)}
-                          disabled={isPending}
-                          title={u.role === 'ADMIN' ? 'Remover Admin' : 'Promover a Admin'}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors disabled:opacity-50 ${
-                            u.role === 'ADMIN'
-                              ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
-                              : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                          }`}
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3l7 4 7-4M5 3v10l7 4 7-4V3" />
-                          </svg>
-                          {u.role === 'ADMIN' ? 'Remover Admin' : 'Promover'}
-                        </button>
-
-                        {/* Suspender */}
-                        <button
-                          onClick={() => handleSuspend(u)}
-                          disabled={isPending}
-                          title={u.status === 'SUSPENDED' ? 'Remover suspensão' : 'Suspender'}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors disabled:opacity-50 ${
-                            u.status === 'SUSPENDED'
-                              ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                              : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                          }`}
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {u.status === 'SUSPENDED' ? 'Remover Suspensão' : 'Suspender'}
-                        </button>
-
-                        {/* Banir */}
-                        <button
-                          onClick={() => handleBan(u)}
-                          disabled={isPending}
-                          title={u.status === 'BANNED' ? 'Remover ban' : 'Banir'}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors disabled:opacity-50 ${
-                            u.status === 'BANNED'
-                              ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
-                              : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                          }`}
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                          </svg>
-                          {u.status === 'BANNED' ? 'Remover Ban' : 'Banir'}
-                        </button>
-
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-400">
               Mostrando {(page - 1) * ITEMS_PER_PAGE + 1}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)} de {filtered.length} utilizadores
             </p>

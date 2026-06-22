@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 
 interface SidebarLink {
   href: string
@@ -28,7 +29,6 @@ const sidebarLinks: SidebarLink[] = [
       </svg>
     ),
   },
-
   {
     href: '/admin/validacao',
     label: 'Validação de Ficheiros',
@@ -49,11 +49,11 @@ const sidebarLinks: SidebarLink[] = [
   },
 ]
 
-function Sidebar(): React.JSX.Element {
+function SidebarNav({ onLinkClick }: { onLinkClick?: () => void }): React.JSX.Element {
   const pathname = usePathname()
 
   return (
-    <aside className="w-52 bg-white border-r border-gray-100 flex flex-col py-6 shrink-0 min-h-screen sticky top-14">
+    <>
       <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase px-5 mb-4">
         Painel
       </p>
@@ -64,6 +64,7 @@ function Sidebar(): React.JSX.Element {
             <Link
               key={href}
               href={href}
+              onClick={onLinkClick}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 isActive
                   ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary rounded-l-none'
@@ -76,7 +77,7 @@ function Sidebar(): React.JSX.Element {
           )
         })}
       </nav>
-    </aside>
+    </>
   )
 }
 
@@ -85,12 +86,65 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps): React.JSX.Element {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
+
+      {/* Sidebar desktop — visível a partir de md */}
+      <aside className="hidden md:flex w-52 bg-white border-r border-gray-100 flex-col py-6 shrink-0 min-h-screen sticky top-14">
+        <SidebarNav />
+      </aside>
+
+      {/* Drawer mobile — overlay + painel deslizante */}
+      {sidebarOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+          {/* Drawer */}
+          <aside className="fixed top-0 left-0 z-50 h-full w-64 bg-white shadow-xl flex flex-col py-6 md:hidden">
+            <div className="flex items-center justify-between px-5 mb-6">
+              <span className="text-sm font-semibold text-gray-700">Menu Admin</span>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Fechar menu"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <SidebarNav onLinkClick={() => setSidebarOpen(false)} />
+          </aside>
+        </>
+      )}
+
+      {/* Conteúdo principal */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Topbar mobile com botão hambúrguer */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-30">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="Abrir menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span className="text-sm font-semibold text-gray-700">Painel de Administração</span>
+        </div>
+
+        <main className="flex-1 w-full overflow-auto">
+          {children}
+        </main>
+      </div>
+
     </div>
   )
 }
