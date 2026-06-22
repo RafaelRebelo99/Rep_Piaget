@@ -30,12 +30,11 @@ export async function POST(req: Request) {
         action: `SUPORTE: Pedido enviado por ${nome} (${email}) — Assunto: "${assunto}"`,
       });
     } catch (logError) {
-      // Não bloqueia a resposta se o log falhar
       console.error("Erro ao registar log de suporte:", logError);
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Erro ao enviar email" }, { status: 500 });
   }
 }
