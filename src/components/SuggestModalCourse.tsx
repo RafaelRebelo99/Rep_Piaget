@@ -11,7 +11,7 @@ interface SuggestModalCourseProps {
 
 const MAX_CHARS = 30
 
-export default function SuggestModalCourse({ userName: _userName, userEmail: _userEmail, onClose }: SuggestModalCourseProps) {
+export default function SuggestModalCourse({ onClose }: SuggestModalCourseProps) {
   const [courseName, setCourseName] = useState('')
   const [extra, setExtra] = useState('')
 
