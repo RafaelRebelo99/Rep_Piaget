@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import CourseSuggestionsList from '@/components/CourseSuggestionsList'
 
 interface Stat {
   label: string
@@ -38,6 +39,12 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
     .from('materials')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'HIDDEN')
+
+  // Sugestões de curso
+  const { data: courseSuggestions } = await supabase
+    .from('course_suggestions')
+    .select('*')
+    .order('created_at', { ascending: false })
 
   const stats: Stat[] = [
     {
@@ -109,6 +116,15 @@ export default async function AdminDashboardPage(): Promise<React.JSX.Element> {
             <p className="text-4xl font-bold text-gray-900">{value}</p>
           </div>
         ))}
+      </div>
+
+      {/* Sugestões de curso */}
+      <div className="mt-8 md:mt-10">
+        <p className="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-1">
+          Feedback dos Utilizadores
+        </p>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Sugestões de Curso</h2>
+        <CourseSuggestionsList initialSuggestions={courseSuggestions ?? []} />
       </div>
 
     </div>
