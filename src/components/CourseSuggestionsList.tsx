@@ -28,25 +28,44 @@ export default function CourseSuggestionsList({ initialSuggestions }: CourseSugg
   const [suggestions, setSuggestions] = useState<CourseSuggestion[]>(initialSuggestions)
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
-  const handleUpdateStatus = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+  const handleApprove = async (id: string) => {
     setLoadingId(id)
     const supabase = createClient()
 
     const { error } = await supabase
       .from('course_suggestions')
-      .update({ status })
+      .update({ status: 'APPROVED' })
       .eq('id', id)
 
     setLoadingId(null)
 
     if (error) {
-      console.error('Erro ao atualizar sugestão:', error)
+      console.error('Erro ao aprovar sugestão:', error)
       return
     }
 
     setSuggestions((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status } : s))
+      prev.map((s) => (s.id === id ? { ...s, status: 'APPROVED' } : s))
     )
+  }
+
+  const handleReject = async (id: string) => {
+    setLoadingId(id)
+    const supabase = createClient()
+
+    const { error } = await supabase
+      .from('course_suggestions')
+      .delete()
+      .eq('id', id)
+
+    setLoadingId(null)
+
+    if (error) {
+      console.error('Erro ao rejeitar sugestão:', error)
+      return
+    }
+
+    setSuggestions((prev) => prev.filter((s) => s.id !== id))
   }
 
   if (suggestions.length === 0) {
@@ -84,7 +103,7 @@ export default function CourseSuggestionsList({ initialSuggestions }: CourseSugg
               {s.status === 'PENDING' && (
                 <div className="flex gap-2 shrink-0">
                   <button
-                    onClick={() => handleUpdateStatus(s.id, 'APPROVED')}
+                    onClick={() => handleApprove(s.id)}
                     disabled={isLoading}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors disabled:opacity-50"
                   >
@@ -92,7 +111,7 @@ export default function CourseSuggestionsList({ initialSuggestions }: CourseSugg
                     Aprovar
                   </button>
                   <button
-                    onClick={() => handleUpdateStatus(s.id, 'REJECTED')}
+                    onClick={() => handleReject(s.id)}
                     disabled={isLoading}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-100 transition-colors disabled:opacity-50"
                   >
