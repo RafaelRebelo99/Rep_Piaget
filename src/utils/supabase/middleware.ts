@@ -10,6 +10,7 @@ const publicRoutes = [
   '/login',        // Login
   '/register',     // Registo
   '/suporte',      // Suporte
+  '/reset-password', // Resetar password
 ];
 
 export const updateSession = async (request: NextRequest) => {
