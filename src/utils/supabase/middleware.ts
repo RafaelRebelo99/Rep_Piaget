@@ -13,7 +13,13 @@ const publicRoutes = [
 ];
 
 export const updateSession = async (request: NextRequest) => {
-  let supabaseResponse = NextResponse.next({
+  const currentPath = request.nextUrl.pathname;
+
+  if (currentPath.startsWith('/api')) {
+    return NextResponse.next();
+  }
+
+  const supabaseResponse = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -24,21 +30,20 @@ export const updateSession = async (request: NextRequest) => {
     supabaseKey!,
     {
       cookies: {
-        getAll() { return request.cookies.getAll(); },
+        getAll() {
+          return request.cookies.getAll();
+        },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            supabaseResponse.cookies.set(name, value, options);
+          });
         },
       },
     }
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-
-  const currentPath = request.nextUrl.pathname;
 
   const isPublicRoute = publicRoutes.includes(currentPath);
 
