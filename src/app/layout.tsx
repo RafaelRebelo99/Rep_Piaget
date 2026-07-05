@@ -62,8 +62,12 @@ export default async function RootLayout({
   const initialUser = await getInitialUser()
 
   return (
-    <html lang="pt" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+    <html 
+      lang="pt" 
+      data-scroll-behavior="smooth" 
+      className={`${geistSans.variable} h-full`}
+    >
+      <body className="min-h-full flex flex-col antialiased">
         <ErrorProvider>
           <Navbar initialUser={initialUser} />
           <main className="flex-1">{children}</main>
