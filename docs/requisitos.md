@@ -121,20 +121,28 @@ Os diagramas de casos de uso serão desenvolvidos em detalhe na documentação U
 
 | ID | Caso de Uso | Ator(es) | Pré-condição |
 |:---|:------------|:---------|:-------------|
-| UC01 | Registar conta | Visitante | Nenhuma |
-| UC02 | Autenticar na plataforma | Utilizador, Admin | Conta registada |
-| UC03 | Fazer upload de material | Utilizador | Autenticado, disciplina existente |
-| UC04 | Fazer download de material | Utilizador | Autenticado, ficheiro aprovado |
-| UC05 | Submeter feedback | Utilizador | Autenticado, disciplina existente |
-| UC06 | Consultar feedback | Utilizador, Admin | Autenticado |
-| UC07 | Interagir com chatbot | Utilizador | Autenticado, materiais carregados |
-| UC08 | Gerar quiz | Utilizador | Autenticado, materiais carregados |
-| UC09 | Pesquisar conteúdos | Visitante, Utilizador | Nenhuma |
-| UC10 | Gerir utilizadores | Admin | Autenticado como Admin |
-| UC11 | Gerir disciplinas | Admin | Autenticado como Admin |
-| UC12 | Aprovar/Rejeitar ficheiros | Admin | Autenticado como Admin, ficheiros pendentes |
-| UC13 | Consultar logs do sistema | Admin | Autenticado como Admin |
-| UC14 | Eliminar ficheiro próprio | Utilizador | Autenticado, ficheiro pertencente a utilizador |
+| UC01 | Autenticar na plataforma | Visitante | Conta registada |
+| UC02 | Registar conta | Visitante | Nenhuma |
+| UC03 | Recuperar palavra-passe | Visitante | Conta registada |
+| UC04 | Contactar suporte | Visitante, Utilizador autenticado, Admin | Nenhuma |
+| UC05 | Pesquisar materiais | Utilizador autenticado, Admin | Autenticado |
+| UC06 | Consultar materiais | Utilizador autenticado, Admin | Autenticado |
+| UC07 | Fazer download de material | Utilizador autenticado, Admin | Autenticado, ficheiro aprovado |
+| UC08 | Fazer upload de material | Utilizador autenticado, Admin | Autenticado, disciplina existente |
+| UC09 | Editar ficheiro próprio | Utilizador autenticado, Admin | Autenticado, ficheiro pertencente ao utilizador |
+| UC10 | Eliminar ficheiro próprio | Utilizador autenticado, Admin | Autenticado, ficheiro pertencente ao utilizador |
+| UC11 | Votar em material | Utilizador autenticado, Admin | Autenticado, material disponível |
+| UC12 | Marcar material como favorito | Utilizador autenticado, Admin | Autenticado, material disponível |
+| UC13 | Submeter feedback | Utilizador autenticado, Admin | Autenticado, disciplina existente |
+| UC14 | Consultar feedback | Utilizador autenticado, Admin | Autenticado |
+| UC15 | Interagir com chatbot | Utilizador autenticado, Admin | Autenticado, materiais carregados |
+| UC16 | Gerar quiz | Utilizador autenticado, Admin | Autenticado, materiais carregados |
+| UC17 | Gerir utilizadores | Admin | Autenticado como Admin |
+| UC18 | Gerir disciplinas | Admin | Autenticado como Admin |
+| UC19 | Aprovar/Rejeitar ficheiros | Admin | Autenticado como Admin, ficheiros pendentes |
+| UC20 | Remover materiais submetidos | Admin | Autenticado como Admin |
+| UC21 | Revogar permissão de upload | Admin | Autenticado como Admin |
+| UC22 | Consultar logs do sistema | Admin | Autenticado como Admin |
 
 
 # 6. Restrições e Pressupostos
