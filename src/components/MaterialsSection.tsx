@@ -22,6 +22,7 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
     materials, categories, currentUserId, isSubmitting, deleteMaterial, updateMaterial 
   } = useMaterials(initialMaterials)
 
+  const { showError } = useGlobalError()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [visibleCount, setVisibleCount] = useState<number>(10)
@@ -61,17 +62,10 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
   async function toggleFavorite(materialId: string) {
   const supabase = createClient()
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
-    alert('Tem de iniciar sessão para adicionar favoritos.')
+  if(!currentUserId) {
     return
   }
-
-  const userId = user.id
+  
   const isFavorite = favoriteIds.has(materialId)
 
   setFavoriteIds((current) => {
@@ -102,14 +96,14 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
     ? await supabase
         .from('material_favorites')
         .delete()
-        .eq('user_id', userId)
+        .eq('user_id', currentUserId)
         .eq('material_id', materialId)
     : await supabase
-    .from('material_favorites')
-    .insert({
-      user_id: userId,
-      material_id: materialId,
-    })
+        .from('material_favorites')
+        .insert({
+          user_id: currentUserId,
+          material_id: materialId,
+        })
 
   if (error) {
     console.error('Erro ao atualizar favorito:', error)
@@ -126,7 +120,19 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
       return next
     })
 
-    alert('Não foi possível atualizar os favoritos.')
+    setFavoriteOrder((current) => {
+      const next = new Map(current)
+
+      if (isFavorite) {
+        next.set(materialId, next.size)
+      } else {
+        next.delete(materialId)
+      }
+      
+      return next
+    })
+
+    showError('Não foi possível atualizar os favoritos.', 'Erro nos Favoritos')
   }
 }
 
@@ -149,7 +155,9 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
   } catch (error) {
     downloadWindow?.close()
     console.error('Erro no download:', error)
-    alert(error instanceof Error ? error.message : 'Não foi possível fazer download.')
+    showError(
+      error instanceof Error ? error.message : 'Não foi possível fazer download.', 'Erro no Download'
+    )
   } finally {
     setDownloadingId(null)
   }
