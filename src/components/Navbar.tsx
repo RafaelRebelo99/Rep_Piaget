@@ -33,6 +33,7 @@ const navLinks = [
       </svg>
     ),
   },
+   
 ]
 
 const authLinks = [
