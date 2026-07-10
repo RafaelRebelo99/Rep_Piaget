@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { FormEvent, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { FormEvent, useEffect, useState, Suspense } from 'react'
+import { useGlobalError } from '@/utils/errorContext'
 
 const icons = {
   graduation: (
@@ -37,8 +38,10 @@ const icons = {
   ),
 }
 
-export default function LoginForm() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { showError } = useGlobalError()
 
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
@@ -60,6 +63,18 @@ export default function LoginForm() {
 
   const isBlocked = blockedUntil !== null
 
+  // Apanhar os erros enviados pelo Middleware do Supabase
+  useEffect(() => {
+    const message = searchParams.get('message')
+    if (message) {
+      showError(message, 'Acesso Restrito')
+      
+      const cleanUrl = window.location.pathname
+      window.history.replaceState({}, '', cleanUrl)
+    }
+  }, [searchParams, showError])
+
+  // Efeito de controlo do bloqueio temporário de tentativas de login
   useEffect(() => {
     if (blockedUntil === null) return
 
@@ -322,5 +337,17 @@ export default function LoginForm() {
         </p>
       </section>
     </main>
+  )
+}
+
+export default function LoginForm() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center text-sm font-medium text-[#87001f]">
+        A carregar...
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }

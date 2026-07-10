@@ -100,6 +100,12 @@ export async function POST(req: Request) {
       role: profile.role,
     })
 
+    // Registar log de login
+    await supabase.from('audit_logs').insert({
+      admin_id: data.user.id,
+      action: `LOGIN: ${profile.full_name ?? profile.email} entrou na plataforma`,
+    })
+
     return NextResponse.json({
       success: true,
       message: 'Login efetuado com sucesso.',

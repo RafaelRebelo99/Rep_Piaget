@@ -6,10 +6,10 @@ export async function POST(req: Request) {
   try {
     const supabase = await createClient()
 
-     const { data: { user } } = await supabase.auth.getUser()
-     if (!user) {
-       return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
-     }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 })
+    }
 
     const formData = await req.formData()
     const file = formData.get('file') as File
@@ -84,6 +84,20 @@ export async function POST(req: Request) {
       await supabase.storage.from('materials').remove([filePath])
       return NextResponse.json({ error: dbError.message }, { status: 500 })
     }
+
+    // Registar log de upload — não bloqueia a resposta em caso de falha
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, email')
+      .eq('id', user.id)
+      .single()
+
+    const userName = profile?.full_name ?? profile?.email ?? user.id
+
+    await supabase.from('audit_logs').insert({
+      admin_id: user.id,
+      action: `FICHEIRO CARREGADO: "${title.trim()}" por ${userName}`,
+    })
 
     return NextResponse.json({ success: true })
   } catch (err) {
