@@ -6,6 +6,7 @@ import { formatBytes, formatDate } from '@/utils/formatter'
 import {
   FileText,
   Download,
+  Heart,
   ThumbsUp,
   FileSpreadsheet,
   Presentation,
@@ -33,7 +34,11 @@ export interface Material {
 interface MaterialCardProps {
   material: Material;
   hideActions?: boolean;
-  actions?: React.ReactNode; 
+  actions?: React.ReactNode;
+  onDownload?: () => void;
+  isDownloading?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 const fileTypeConfig: Record<string, { icon: LucideIcon, color: string, bg: string }> = {
@@ -47,7 +52,7 @@ const fileTypeConfig: Record<string, { icon: LucideIcon, color: string, bg: stri
   default: { icon: File, color: 'text-gray-600', bg: 'bg-gray-50' }
 }
 
-export default function MaterialCard({ material, hideActions = false, actions }: MaterialCardProps) {
+export default function MaterialCard({ material, hideActions = false, actions, onDownload, isDownloading, isFavorite, onToggleFavorite }: MaterialCardProps) {
   const supabase = createClient()
 
   const [currentScore, setCurrentScore] = useState<number>(material.score)
@@ -234,10 +239,33 @@ export default function MaterialCard({ material, hideActions = false, actions }:
           </button>
         </div>
 
-        <button className="bg-gray-50 p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600">
-          <Download className="w-5 h-5" />
-        </button>
-        {actions}
+        <button
+          type="button"
+          onClick={() => onToggleFavorite?.()}
+          disabled={hideActions}
+          aria-label={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+          title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+          className={`bg-gray-50 p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+          isFavorite
+            ? 'text-red-500 hover:text-red-600'
+            : 'text-gray-400 hover:text-red-500'
+        }`}
+      >
+      <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onDownload?.()}
+        disabled={isDownloading}
+        aria-label="Download"
+        title="Download"
+        className="bg-gray-50 p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+    <Download className="w-5 h-5" />
+    </button>
+    {actions}
+      
       </div>
     </div>
   )

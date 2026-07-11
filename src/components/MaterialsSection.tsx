@@ -7,6 +7,7 @@ import { useGlobalError } from '@/utils/errorContext'
 import MaterialCard from './MaterialCard'
 import SearchBar from './SearchBarDiscipline'
 import UploadModal from './UploadModal'
+import { createClient } from '@/utils/supabase/client'
 import QuizModal from './QuizModal'
 
 // Interface
@@ -14,17 +15,23 @@ interface MaterialsSectionProps {
   materials: ExtendedMaterial[]
   disciplineName: string
   disciplineId: string
+  initialFavoriteIds: string[]
 }
 
-export default function MaterialsSection({ materials: initialMaterials, disciplineName, disciplineId }: MaterialsSectionProps) {
+export default function MaterialsSection({ materials: initialMaterials, disciplineName, disciplineId, initialFavoriteIds }: MaterialsSectionProps) {
   const { 
     materials, categories, currentUserId, isSubmitting, deleteMaterial, updateMaterial 
   } = useMaterials(initialMaterials)
 
+  const { showError } = useGlobalError()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [visibleCount, setVisibleCount] = useState<number>(10)
   const [modalOpen, setModalOpen] = useState(false)
+  
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set(initialFavoriteIds))
+  const [favoriteOrder, setFavoriteOrder] = useState<Map<string, number>>(() => new Map(initialFavoriteIds.map((id, index) => [id, index])))
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [quizOpen, setQuizOpen] = useState(false)
 
   // Extração de Categorias
@@ -37,6 +44,126 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
     const matchesSearch = mat.title.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
   })
+  
+  .sort((a, b) => {
+    const aIsFavorite = favoriteIds.has(a.material_id)
+    const bIsFavorite = favoriteIds.has(b.material_id)
+
+    if (aIsFavorite && bIsFavorite) {
+      return (
+        (favoriteOrder.get(a.material_id) ?? Number.MAX_SAFE_INTEGER) -
+        (favoriteOrder.get(b.material_id) ?? Number.MAX_SAFE_INTEGER)
+      )
+    }
+
+    if (aIsFavorite) return -1
+    if (bIsFavorite) return 1
+    return 0
+  })
+
+  async function toggleFavorite(materialId: string) {
+  const supabase = createClient()
+
+  if(!currentUserId) {
+    return
+  }
+  
+  const isFavorite = favoriteIds.has(materialId)
+
+  setFavoriteIds((current) => {
+    const next = new Set(current)
+
+    if (isFavorite) {
+      next.delete(materialId)
+    } else {
+      next.add(materialId)
+    }
+
+    return next
+  })
+
+  setFavoriteOrder((current) => {
+    const next = new Map(current)
+
+    if (isFavorite) {
+      next.delete(materialId)
+    } else if (!next.has(materialId)) {
+      next.set(materialId, next.size)
+    }
+
+    return next
+  })
+
+  const { error } = isFavorite
+    ? await supabase
+        .from('material_favorites')
+        .delete()
+        .eq('user_id', currentUserId)
+        .eq('material_id', materialId)
+    : await supabase
+        .from('material_favorites')
+        .insert({
+          user_id: currentUserId,
+          material_id: materialId,
+        })
+
+  if (error) {
+    console.error('Erro ao atualizar favorito:', error)
+
+    setFavoriteIds((current) => {
+      const next = new Set(current)
+
+      if (isFavorite) {
+        next.add(materialId)
+      } else {
+        next.delete(materialId)
+      }
+
+      return next
+    })
+
+    setFavoriteOrder((current) => {
+      const next = new Map(current)
+
+      if (isFavorite) {
+        next.set(materialId, next.size)
+      } else {
+        next.delete(materialId)
+      }
+      
+      return next
+    })
+
+    showError('Não foi possível atualizar os favoritos.', 'Erro nos Favoritos')
+  }
+}
+
+  async function downloadMaterial(materialId: string) {
+    const downloadWindow = window.open('', '_blank')
+    setDownloadingId(materialId)
+
+  try {
+    const res = await fetch(`/api/materials/${materialId}/download`)
+    const data = await res.json().catch(() => null)
+
+    if (!res.ok) {
+      throw new Error(data?.error || 'Não foi possível fazer download.')
+    }
+    if (downloadWindow) {
+      downloadWindow.location.href = data.downloadUrl
+    } else {
+      window.location.href = data.downloadUrl
+    }
+  } catch (error) {
+    downloadWindow?.close()
+    console.error('Erro no download:', error)
+    showError(
+      error instanceof Error ? error.message : 'Não foi possível fazer download.', 'Erro no Download'
+    )
+  } finally {
+    setDownloadingId(null)
+  }
+}
 
   return (
     <section className="lg:col-span-7">
@@ -105,6 +232,10 @@ export default function MaterialsSection({ materials: initialMaterials, discipli
               isParentLoading={isSubmitting}
               onDelete={deleteMaterial}
               onUpdate={updateMaterial}
+              isFavorite={favoriteIds.has(mat.material_id)}
+              isDownloading={downloadingId === mat.material_id}
+              onDownload={downloadMaterial}
+              onToggleFavorite={toggleFavorite}
             />
           ))
         ) : (
@@ -152,9 +283,13 @@ interface EditableWrapperProps {
   isParentLoading: boolean
   onDelete: (id: string) => Promise<void>
   onUpdate: (id: string, title: string, categoryId: string) => Promise<void>
+  isFavorite: boolean
+  isDownloading: boolean
+  onToggleFavorite: (id: string) => Promise<void>
+  onDownload: (id: string) => Promise<void>
 }
 
-function EditableMaterialWrapper({ mat, currentUserId, allSystemCategories, isParentLoading, onDelete, onUpdate }: EditableWrapperProps) {
+function EditableMaterialWrapper({ mat, currentUserId, allSystemCategories, isParentLoading, onDelete, onUpdate, isFavorite, isDownloading, onToggleFavorite, onDownload }: EditableWrapperProps) {
   const { showError } = useGlobalError()
   const [isEditing, setIsEditing] = useState(false)
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
@@ -313,7 +448,14 @@ function EditableMaterialWrapper({ mat, currentUserId, allSystemCategories, isPa
             </div>
           )}
           <div className={`flex-1 min-w-0 [&>div]:border-none ${isOwner ? '[&>div]:rounded-l-none' : ''}`}>
-            <MaterialCard material={mat} hideActions={isParentLoading} />
+            <MaterialCard
+              material={mat}
+              hideActions={isParentLoading}
+              isFavorite={isFavorite}
+              isDownloading={isDownloading}
+              onToggleFavorite={() => onToggleFavorite(mat.material_id)}
+              onDownload={() => onDownload(mat.material_id)}
+          />
           </div>
         </div>
       )}
