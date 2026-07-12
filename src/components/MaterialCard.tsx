@@ -168,7 +168,7 @@ export default function MaterialCard({ material, hideActions = false, actions, o
               disabled={isVoting}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-200 rounded-lg text-xs font-bold text-red-700 hover:bg-red-100/50 hover:border-red-300 transition-all active:scale-95 disabled:opacity-50"
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Reverter Meu Voto
+              <RotateCcw className="w-3.5 h-3.5" /> Reverter Voto
             </button>
           )}
           <button

@@ -18,7 +18,7 @@ Existe uma regra de segurança essencial para o controlo de qualidade: **Se o Sc
 Quando isto acontece na UI:
 1. **Alerta Visual:** O ficheiro deixa de mostrar o botão de Download normal e, em vez disso, exibe um banner vermelho de alerta informando que *"o ficheiro atingiu o limite de votos negativos comunitários"*.
 2. **Ações do Utilizador no Estado Crítico:**
-   - **Reverter o Meu Voto:** O utilizador que provocou a descida do score tem a oportunidade de reverter o seu voto (usando o botão circular), o que fará o score subir novamente para -4, recuperando o aspeto original do ficheiro.
+   - **Reverter Voto:** O utilizador que provocou a descida do score tem a oportunidade de reverter o seu voto (usando o botão circular), o que fará o score subir novamente para -4, recuperando o aspeto original do ficheiro.
    - **Confirmar e Manter:** Clicar no botão do "Check" ativa o estado local `isDismissed = true`, ocultando o componente completamente do ecrã do utilizador que o dispensou.
 
 ## 3. Ocultação Global (`MaterialsSection.tsx`)
