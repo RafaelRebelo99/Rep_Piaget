@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Search } from 'lucide-react'
 
+
 interface Props {
     placeholder?: string
     onSearch: (query: string) => void
