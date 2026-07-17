@@ -78,15 +78,15 @@ export default function Suporte() {
     }`;
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center py-16 px-4">
-      <div className="text-center mb-10">
+    <main className="bg-gray-50 flex flex-col items-center py-8 px-4">
+      <div className="text-center mb-6">
         <h1 className="text-3xl font-bold text-primary mb-2">Suporte</h1>
         <p className="text-gray-500 text-sm">
           Relate problemas ou bugs encontrados na plataforma.
         </p>
       </div>
 
-      <div className="w-full max-w-xl bg-white rounded-xl shadow-sm p-8">
+      <div className="w-full max-w-xl bg-white rounded-xl shadow-sm p-6">
 
         {/* Caixa de feedback */}
         {feedback && (
@@ -121,7 +121,7 @@ export default function Suporte() {
           </div>
         )}
 
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
           <div>
             <label className="text-xs tracking-widest text-primary font-semibold uppercase">
               Nome Completo <span className="text-primary">*</span>

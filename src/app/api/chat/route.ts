@@ -24,6 +24,12 @@ export async function POST(req: Request) {
       ? chunks.map((c: { title: string; content: string }) => `${c.title}:\n${c.content}`).join('\n\n')
       : ''
 
+    if (!context) {
+      return NextResponse.json({
+        message: 'Não existem materiais disponíveis para esta disciplina. Carrega alguns ficheiros para poderes usar o assistente.',
+      })
+    }
+
     const model = new ChatGoogleGenerativeAI({
       model: 'gemini-2.5-flash',
       apiKey: process.env.GOOGLE_API_KEY,
