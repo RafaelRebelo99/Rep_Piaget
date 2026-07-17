@@ -175,7 +175,7 @@ export default function UploadModal({ disciplineId, disciplineName, preloadedCat
               <input
                 ref={inputRef}
                 type="file"
-                accept=".pdf,.docx,.doc,.pptx,.xlsx,.md,.txt"
+                accept=".pdf,.docx,.doc,.pptx,.xlsx,.md,.txt,.jpeg,.jpg,.png"
                 onChange={handleFileChange}
                 className="hidden"
               />

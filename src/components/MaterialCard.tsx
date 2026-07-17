@@ -13,6 +13,7 @@ import {
   FileCode,
   File,
   LucideIcon,
+  Image,
   ThumbsDown,
   AlertTriangle,
   RotateCcw,
@@ -49,6 +50,9 @@ const fileTypeConfig: Record<string, { icon: LucideIcon, color: string, bg: stri
   xlsx: { icon: FileSpreadsheet, color: 'text-green-600', bg: 'bg-green-50' },
   md: { icon: FileCode, color: 'text-gray-600', bg: 'bg-gray-50' },
   txt: { icon: FileText, color: 'text-gray-500', bg: 'bg-gray-50' },
+  jpeg: { icon: Image, color: 'text-purple-600', bg: 'bg-purple-50' },
+  jpg: { icon: Image, color: 'text-purple-600', bg: 'bg-purple-50' },
+  png: { icon: Image, color: 'text-purple-600', bg: 'bg-purple-50' },
   default: { icon: File, color: 'text-gray-600', bg: 'bg-gray-50' }
 }
 
