@@ -13,6 +13,7 @@ const publicRoutes = [
   '/reset-password', // Resetar password
   '/contactos',    // Contactos
   '/termos',       // Termos de utilização
+  '/update-password', // Atualizar password
 ];
 
 export const updateSession = async (request: NextRequest) => {
