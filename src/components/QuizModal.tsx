@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, RotateCcw, Trophy, AlertCircle, Loader2, FileText, Presentation, FileSpreadsheet, FileCode, File } from 'lucide-react'
+import { X, RotateCcw, Trophy, AlertCircle, Loader2, FileText, Presentation, FileSpreadsheet, FileCode, File, Image } from 'lucide-react'
 import type { QuizQuestion } from '@/app/api/quiz/route'
 import type { ExtendedMaterial } from '@/utils/useMaterials'
 
@@ -20,6 +20,9 @@ const fileIcon: Record<string, React.ElementType> = {
   pptx: Presentation,
   xlsx: FileSpreadsheet,
   md: FileCode,
+  jpeg: Image,
+  jpg: Image,
+  png: Image,
   txt: FileText,
 }
 

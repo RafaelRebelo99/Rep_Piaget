@@ -13,6 +13,7 @@ import {
   FileCode,
   File,
   LucideIcon,
+  Image,
   ThumbsDown,
   AlertTriangle,
   RotateCcw,
@@ -49,6 +50,9 @@ const fileTypeConfig: Record<string, { icon: LucideIcon, color: string, bg: stri
   xlsx: { icon: FileSpreadsheet, color: 'text-green-600', bg: 'bg-green-50' },
   md: { icon: FileCode, color: 'text-gray-600', bg: 'bg-gray-50' },
   txt: { icon: FileText, color: 'text-gray-500', bg: 'bg-gray-50' },
+  jpeg: { icon: Image, color: 'text-purple-600', bg: 'bg-purple-50' },
+  jpg: { icon: Image, color: 'text-purple-600', bg: 'bg-purple-50' },
+  png: { icon: Image, color: 'text-purple-600', bg: 'bg-purple-50' },
   default: { icon: File, color: 'text-gray-600', bg: 'bg-gray-50' }
 }
 
@@ -168,7 +172,7 @@ export default function MaterialCard({ material, hideActions = false, actions, o
               disabled={isVoting}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-200 rounded-lg text-xs font-bold text-red-700 hover:bg-red-100/50 hover:border-red-300 transition-all active:scale-95 disabled:opacity-50"
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Reverter Meu Voto
+              <RotateCcw className="w-3.5 h-3.5" /> Reverter Voto
             </button>
           )}
           <button

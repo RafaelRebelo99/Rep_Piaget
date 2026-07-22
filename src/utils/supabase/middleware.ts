@@ -11,6 +11,8 @@ const publicRoutes = [
   '/register',     // Registo
   '/suporte',      // Suporte
   '/reset-password', // Resetar password
+  '/contactos',    // Contactos
+  '/termos',       // Termos de utilização
   '/update-password', // Atualizar password
 ];
 

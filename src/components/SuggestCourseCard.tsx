@@ -25,7 +25,7 @@ export default function SuggestCourseCard() {
 
   function handleClick() {
     if (!isLoggedIn) {
-      router.push('/login')
+      router.push('/login?message=Tens de fazer login para sugerir um curso.')
       return
     }
     setModalOpen(true)

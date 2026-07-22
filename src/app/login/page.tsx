@@ -187,12 +187,12 @@ function LoginContent() {
       } else {
         router.push('/')
       }
+      return
     } catch (error) {
       console.error('Erro no login:', error)
       setPasswordError('Erro de ligação. Tente novamente.')
-    } finally {
-      setLoading(false)
     }
+    setLoading(false)
   }
 
   return (

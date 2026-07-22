@@ -14,7 +14,7 @@ export default async function CursoPage({ params }: { params: Promise<{ cursoId:
 
   const { data: course_disciplines } = await supabase
     .from('course_disciplines')
-    .select('*, discipline:disciplines(*, materials(count), feedbacks(count))')
+    .select('*, discipline:disciplines(*, materials(status), feedbacks(count))')
     .eq('course_id', cursoId)
 
   return (
