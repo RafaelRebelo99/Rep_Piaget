@@ -11,6 +11,8 @@ const publicRoutes = [
   '/register',     // Registo
   '/suporte',      // Suporte
   '/reset-password', // Resetar password
+  '/contactos',    // Contactos
+  '/termos',       // Termos de utilização
 ];
 
 export const updateSession = async (request: NextRequest) => {

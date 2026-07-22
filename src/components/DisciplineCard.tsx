@@ -8,14 +8,14 @@ interface DisciplineCardProps {
   discipline: {
     id: string
     name: string
-    materials: { count: number }[]
+    materials: { status: string }[]
     feedbacks: { count: number }[]
   }
   year?: number
 }
 
 export default function DisciplineCard({ discipline, year }: DisciplineCardProps) {
-  const materialsCount = discipline.materials?.[0]?.count ?? 0
+  const materialsCount = discipline.materials?.filter(m => m.status !== 'HIDDEN').length ?? 0
   const feedbacksCount = discipline.feedbacks?.[0]?.count ?? 0
 
   const params = useParams()
